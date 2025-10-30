@@ -1,4 +1,8 @@
+from balderhub.data.lib.utils.decorator_register_for_data_item import register_for_data_item
+
 __all__ = [
+
+    "register_for_data_item",
 
     "__version__",
 
