@@ -298,7 +298,8 @@ class SingleDataItem(ABC):
                 # expect another single data item as child
                 if isinstance(cur_computed_value, SingleDataItem):
                     # overwrite value only if it is really a data item
-                    cur_computed_value = NOT_DEFINABLE if cur_computed_value.all_fields_are_not_definable() else cur_computed_value
+                    cur_computed_value = NOT_DEFINABLE \
+                        if cur_computed_value.all_fields_are_not_definable() else cur_computed_value
                 # otherwise it is already usable for this method
             if cur_computed_value != NOT_DEFINABLE:
                 return False
@@ -355,8 +356,10 @@ class SingleDataItem(ABC):
             other_value = getattr(other, cur_field.name)
 
             # set NOT_DEFINABLE in case all elements of the current objects are NOT_DEFINABLE
-            self_value = NOT_DEFINABLE if isinstance(self_value, SingleDataItem) and self_value.all_fields_are_not_definable() else self_value
-            other_value = NOT_DEFINABLE if isinstance(other_value, SingleDataItem) and other_value.all_fields_are_not_definable() else other_value
+            if isinstance(self_value, SingleDataItem) and self_value.all_fields_are_not_definable():
+                self_value = NOT_DEFINABLE
+            if isinstance(other_value, SingleDataItem) and other_value.all_fields_are_not_definable():
+                other_value = NOT_DEFINABLE
 
             if needs_to_be_checked(self_value, other_value):
                 raw_type, _ = get_data_item_type(cur_field)
@@ -388,10 +391,11 @@ class SingleDataItem(ABC):
                                     error_list.extend(cur_self_item.get_difference_error_messages(cur_other_item))
                                 else:
                                     # normal item -> compare values
-                                    if allow_non_definable and cur_self_item == NOT_DEFINABLE or cur_other_item is NOT_DEFINABLE:
+                                    one_is_not_def = cur_self_item == NOT_DEFINABLE or cur_other_item is NOT_DEFINABLE
+                                    if allow_non_definable and one_is_not_def:
                                         # okay
                                         continue
-                                    elif cur_self_item != cur_other_item:
+                                    if cur_self_item != cur_other_item:
                                         error_list.append(
                                             f"detect different value for dataclass field `{cur_field.name}` - "
                                             f"self: `{self_value}` | other: `{other_value}`")
