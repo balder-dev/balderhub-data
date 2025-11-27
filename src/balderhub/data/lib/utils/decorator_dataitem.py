@@ -49,35 +49,35 @@ def dataitem(cls=None, /, *, init=True, repr=True, eq=True, order=False,
         if isinstance(type_def, type):
             # references a type
             return
-        elif allow_nesting:
-            # references another type definition
-            if get_origin(type_def) in [list, List]:
-                inner_args = get_args(type_def)
-                if len(inner_args) != 1:
-                    raise MisconfiguredDataclassError('list type definition can only have one argument for '
-                                                      'balderhub-data dataclasses')
-                _validate_element(inner_args[0])
-            elif get_origin(type_def) is Optional:
-                inner_args = get_args(type_def)
-                if len(inner_args) != 1:
-                    raise MisconfiguredDataclassError('Option type definition can only have one argument for '
-                                                      'balderhub-data dataclasses')
+        if not allow_nesting:
+            raise MisconfiguredDataclassError('nesting typing is only allowed for list')
+        # references another type definition
+        if get_origin(type_def) in [list, List]:
+            inner_args = get_args(type_def)
+            if len(inner_args) != 1:
+                raise MisconfiguredDataclassError('list type definition can only have one argument for '
+                                                  'balderhub-data dataclasses')
+            _validate_element(inner_args[0])
+        elif get_origin(type_def) is Optional:
+            inner_args = get_args(type_def)
+            if len(inner_args) != 1:
+                raise MisconfiguredDataclassError('Option type definition can only have one argument for '
+                                                  'balderhub-data dataclasses')
+            _validate_element(inner_args[0], allow_nesting=False)
+        elif get_origin(type_def) is Union:
+            inner_args = list(get_args(type_def))
+            if len(inner_args) == 1:
                 _validate_element(inner_args[0], allow_nesting=False)
-            elif get_origin(type_def) is Union:
-                inner_args = list(get_args(type_def))
-                if len(inner_args) == 1:
-                    _validate_element(inner_args[0], allow_nesting=False)
-                elif len(inner_args) == 2 and none_type in inner_args:
-                    # make sure that `None` is part of it
-                    inner_args.remove(none_type)
-                    _validate_element(inner_args[0], allow_nesting=False)
-                else:
-                    raise MisconfiguredDataclassError('Union type definition with multiple inner arguments '
-                                                      '(except None) is not allowed in balderhub-data dataclasses')
+            elif len(inner_args) == 2 and none_type in inner_args:
+                # make sure that `None` is part of it
+                inner_args.remove(none_type)
+                _validate_element(inner_args[0], allow_nesting=False)
             else:
-                raise MisconfiguredDataclassError(f'type definition `{type_def}` are not possible in balderhub-data dataclasses')
+                raise MisconfiguredDataclassError('Union type definition with multiple inner arguments '
+                                                  '(except None) is not allowed in balderhub-data dataclasses')
         else:
-            raise MisconfiguredDataclassError(f'nesting typing is only allowed for list')
+            raise MisconfiguredDataclassError(f'type definition `{type_def}` are not possible in balderhub-data '
+                                              f'dataclasses')
 
     # validate used fields
     for cur_field in dataclasses.fields(wrapped_cls):

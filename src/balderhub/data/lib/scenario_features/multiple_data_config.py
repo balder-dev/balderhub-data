@@ -5,23 +5,33 @@ import random
 
 from balderhub.data.lib.utils import SingleDataItemCollection
 from balderhub.data.lib.utils.abstract_data_item_related_feature import AbstractDataItemRelatedFeature
-from balderhub.data.lib.utils.single_data_item import SingleDataItemType
+from balderhub.data.lib.utils.single_data_item import SingleDataItemTypeT
 
 
 
 class MultipleDataConfig(AbstractDataItemRelatedFeature):
+    """
+    This config feature returns a list of data item elements.
+    """
 
     class DoesNotExist(Exception):
-        pass
+        """
+        raised in case that the requested data item does not exist
+        """
 
     class MultipleElementsReturned(Exception):
-        pass
+        """
+        raised in case there are more than one matching elements in the list
+        """
 
     @property
     def data_list(self) -> SingleDataItemCollection:
+        """
+        :return: returns the data item collection this config feature describes
+        """
         raise NotImplementedError()
 
-    def get_for_identifier(self, identifier) -> SingleDataItemType | None:
+    def get_for_identifier(self, identifier) -> SingleDataItemTypeT | None:
         # TODO remove here and add in SingleDataItemCollection!
 
         elems = [e for e in self.data_list if e.get_unique_identification() == identifier]
@@ -31,7 +41,7 @@ class MultipleDataConfig(AbstractDataItemRelatedFeature):
             raise ValueError(f'found more than one elements with identifier {identifier}')
         return elems[0]
 
-    def filter_by(self, **kwargs) -> List[SingleDataItemType]:
+    def filter_by(self, **kwargs) -> List[SingleDataItemTypeT]:
         # TODO remove here and add in SingleDataItemCollection!
 
         result = []
@@ -45,7 +55,7 @@ class MultipleDataConfig(AbstractDataItemRelatedFeature):
                 result.append(cur_elem)
         return result
 
-    def get_by(self, **kwargs) -> List[SingleDataItemType]:
+    def get_by(self, **kwargs) -> List[SingleDataItemTypeT]:
         # TODO remove here and add in SingleDataItemCollection!
         result = self.filter_by(**kwargs)
         if len(result) == 0:
@@ -55,6 +65,6 @@ class MultipleDataConfig(AbstractDataItemRelatedFeature):
                                                 f"use `filter_by()` if you want to retrieve multiple objects")
         return result[0]
 
-    def get_random(self) -> SingleDataItemType:
+    def get_random(self) -> SingleDataItemTypeT:
         # TODO remove here and add in SingleDataItemCollection!
         return random.choice(self.data_list)

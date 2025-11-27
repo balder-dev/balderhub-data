@@ -28,7 +28,11 @@ class ResponseMessageList:
     def __iter__(self):
         return iter(self._responses)
 
-    def append(self, elem: ResponseMessage | str):
+    def append(self, elem: ResponseMessage | str) -> None:
+        """
+        This method adds a Response Message object to the list
+        :param elem: the message that should be added
+        """
         if isinstance(elem, str):
             self._responses.append(ResponseMessage(elem))
         elif isinstance(elem, ResponseMessage):
@@ -37,9 +41,18 @@ class ResponseMessageList:
             raise TypeError('detect unexpected type for parameter `elem`')
 
     def copy(self):
+        """
+        This method copies the list. Note: The inner items will not be copied.
+        :return: returns a copies list
+        """
         return ResponseMessageList(self._responses.copy())
 
-    def compare(self, other_list: ResponseMessageList):
+    def compare(self, other_list: ResponseMessageList) -> bool:
+        """
+        This method compares two response-message lists with each other.
+        :param other_list: the other response-message list
+        :return: True if both lists are equal, False otherwise
+        """
         if len(self) != len(other_list):
             return False
         self_responses_copy = self._responses.copy()

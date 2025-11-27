@@ -1,8 +1,12 @@
 
 
 class MisconfiguredDataclassError(Exception):
-    pass
+    """
+    exception that is thrown in case the data items are misconfigured
+    """
 
 
 class DuplicateDataObjectError(Exception):
-    pass
+    """
+    exception for duplicated data objects
+    """

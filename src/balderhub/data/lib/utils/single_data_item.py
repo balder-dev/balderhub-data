@@ -11,20 +11,31 @@ from .not_definable import NOT_DEFINABLE
 
 logger = logging.getLogger(__name__)
 
-SingleDataItemType = TypeVar("SingleDataItemType", bound="SingleDataItem")
+SingleDataItemTypeT = TypeVar("SingleDataItemTypeT", bound="SingleDataItem")
 
 
 @dataclasses.dataclass
 class SingleDataItem(ABC):
+    """
+    This is a base class for data items. Data items are python dataclasses that are used for defining the model to test.
+    """
 
     @abstractmethod
     def get_unique_identification(self):
+        """
+        Individual method that returns a unique identifier for the data item.
+        :return: a unique identifier for the specific data item object
+        """
         raise NotImplementedError
 
     @classmethod
     def create_as_nested(cls, **kwargs):
+        """
+        Class method for create a data item out of field-lookups (attribute name)
+        :param kwargs: the field lookups with its value
+        :return: the instantiated data item
+        """
         kwargs_splitted = convert_field_lookups_to_dict_structure(kwargs, nested=False)
-
 
         dataclass_fields = dataclasses.fields(cls)
 
@@ -88,7 +99,7 @@ class SingleDataItem(ABC):
         return cls(**fields_for_obj)
 
     @classmethod
-    def create_non_definable(cls, nested=True) -> SingleDataItemType:
+    def create_non_definable(cls, nested=True) -> SingleDataItemTypeT:
         """
         :return: returns instance of this  data item with `NON_DEFINABLE` for every field
         """
@@ -98,19 +109,23 @@ class SingleDataItem(ABC):
         return cls.create_as_nested(**data)
 
     @classmethod
-    def get_field(cls, field_str: str) -> dataclasses.Field:
-        splitted_field_str = field_str.split("__")
+    def get_field(cls, field_lookup_str: str) -> dataclasses.Field:
+        """
+        Returns the specific data class field by its field lookup name
+        :param field_lookup_str: the field lookup string
+        :return: the data class field
+        """
+        splitted_field_str = field_lookup_str.split("__")
         first_field_part = splitted_field_str.pop(0)
         relevant_fields = [field for field in dataclasses.fields(cls) if field.name == first_field_part]
         if len(relevant_fields) == 1:
             if len(splitted_field_str) > 0:
                 subtype, _ = cls.get_field_data_type(first_field_part)
-                if issubclass(subtype, SingleDataItem):
-                    return subtype.get_field('__'.join(splitted_field_str))
-                else:
-                    raise KeyError(f'the subkey `{first_field_part}` does not reference a data item type in data item `{cls.__name__}`')
-            else:
-                return relevant_fields[0]
+                if not issubclass(subtype, SingleDataItem):
+                    raise KeyError(f'the subkey `{first_field_part}` does not reference a data item type in data '
+                                   f'item `{cls.__name__}`')
+                return subtype.get_field('__'.join(splitted_field_str))
+            return relevant_fields[0]
         raise KeyError(f'can not find a field `{first_field_part}` in data item `{cls.__name__}`')
 
     @classmethod
@@ -175,8 +190,13 @@ class SingleDataItem(ABC):
         return [field for field in all_fields if field not in except_fields]
 
     @classmethod
-    def get_field_data_type(cls, field_name: str) -> tuple[type, bool]:
-        splitted_field_names = field_name.split('__')
+    def get_field_data_type(cls, field_lookup_str: str) -> tuple[type, bool]:
+        """
+        This method returns the specific data type of a field. It automatically resolves subscripted type definitions.
+        :param field_lookup_str: the field lookup string
+        :return: the unsubscripted field type
+        """
+        splitted_field_names = field_lookup_str.split('__')
         cur_splitted_name = splitted_field_names.pop(0)
 
         all_relevant_fields = [field for field in dataclasses.fields(cls) if field.name == cur_splitted_name]
@@ -187,15 +207,19 @@ class SingleDataItem(ABC):
         if len(splitted_field_names) == 0:
             # this is the requested data type
             return cur_field_type, is_optional
-        if issubclass(cur_field_type, SingleDataItem):
-            return cur_field_type.get_field_data_type('__'.join(splitted_field_names))
-        else:
-            raise KeyError(f'can not resolve the field {field_name} for data item {cls.__name__}, '
+        if not issubclass(cur_field_type, SingleDataItem):
+            raise KeyError(f'can not resolve the field {field_lookup_str} for data item {cls.__name__}, '
                            f'because field is no data item class')
+        return cur_field_type.get_field_data_type('__'.join(splitted_field_names))
 
-    def get_field_value(self, field_name: str):
+    def get_field_value(self, field_lookup_str: str):
+        """
+        This method returns the value of the provided field.
+        :param field_lookup_str: the field lookup string
+        :return: the field value
+        """
         item = self
-        for cur_splitted_name in field_name.split('__'):
+        for cur_splitted_name in field_lookup_str.split('__'):
             if item == NOT_DEFINABLE:
                 return NOT_DEFINABLE
             if not hasattr(item, cur_splitted_name):
@@ -298,21 +322,54 @@ class SingleDataItem(ABC):
                 # expect another single data item as child
                 if isinstance(cur_computed_value, SingleDataItem):
                     # overwrite value only if it is really a data item
-                    cur_computed_value = NOT_DEFINABLE if cur_computed_value.all_fields_are_not_definable() else cur_computed_value
+                    cur_computed_value = NOT_DEFINABLE \
+                        if cur_computed_value.all_fields_are_not_definable() else cur_computed_value
                 # otherwise it is already usable for this method
             if cur_computed_value != NOT_DEFINABLE:
                 return False
         return True
 
-    def compare(self, other: SingleDataItemType, ignore_fields: List[str] | None = None,
-                allow_non_definable: bool = False, validate_unique_identification_seperatly=True) -> bool:
+    def compare(
+            self,
+            other: SingleDataItemTypeT,
+            ignore_field_lookups: List[str] | None = None,
+            allow_non_definable: bool = False,
+            validate_unique_identification_separately=True
+    ) -> bool:
+        """
+        This method compares a data item with another data item from same type.
+        :param other: the other data item to compare with
+        :param ignore_field_lookups: a list with field lookups that should be ignored
+        :param allow_non_definable: True if the method should ignore fields for which one data item has the value
+                                    `NOT_DEFINABLE`
+        :param validate_unique_identification_separately: True if the method should validate the unique-identification
+                                                          value (provided with
+                                                          :meth:`SingleDataItem.get_unique_identification`) separately
+        :return: True if the data of both data item objects are equal
+        """
         error_msgs = self.get_difference_error_messages(
-            other=other, ignore_fields=ignore_fields, allow_non_definable=allow_non_definable,
-            validate_unique_identification_seperatly=validate_unique_identification_seperatly)
+            other=other, ignore_field_lookups=ignore_field_lookups, allow_non_definable=allow_non_definable,
+            validate_unique_identification_separately=validate_unique_identification_separately)
         return len(error_msgs) == 0
 
-    def get_difference_error_messages(self, other: SingleDataItemType, ignore_fields: List[str] | None = None,
-                                      allow_non_definable: bool = False, validate_unique_identification_seperatly=True) -> List[str]:
+    def get_difference_error_messages(
+            self,
+            other: SingleDataItemTypeT,
+            ignore_field_lookups: List[str] | None = None,
+            allow_non_definable: bool = False,
+            validate_unique_identification_separately=True
+    ) -> List[str]:
+        """
+
+        :param other: the other data item to compare with
+        :param ignore_field_lookups: a list with field lookups that should be ignored
+        :param allow_non_definable: True if the method should ignore fields for which one data item has the value
+                                    `NOT_DEFINABLE`
+        :param validate_unique_identification_separately: True if the method should validate the unique-identification
+                                                          value (provided with
+                                                          :meth:`SingleDataItem.get_unique_identification`) separately
+        :return: A list with detected error messages
+        """
 
         if allow_non_definable and (self.all_fields_are_not_definable() or other == NOT_DEFINABLE):
             return []
@@ -321,8 +378,8 @@ class SingleDataItem(ABC):
             raise TypeError(f'`other` must be a `{self.__class__}` instance (is `{other}`)')
 
         # TODO rework this
-        if ignore_fields is None:
-            ignore_fields = []
+        if ignore_field_lookups is None:
+            ignore_field_lookups = []
 
         def needs_to_be_checked(self_val, other_val):
             if not allow_non_definable:
@@ -339,24 +396,26 @@ class SingleDataItem(ABC):
 
         error_list = []
 
-        if validate_unique_identification_seperatly:
-            self_unqiue_identification = self.get_unique_identification()
+        if validate_unique_identification_separately:
+            self_unique_identification = self.get_unique_identification()
             other_unqiue_identification = other.get_unique_identification()
-            if needs_to_be_checked(self_unqiue_identification, other_unqiue_identification):
-                if self_unqiue_identification != other_unqiue_identification:
+            if needs_to_be_checked(self_unique_identification, other_unqiue_identification):
+                if self_unique_identification != other_unqiue_identification:
                     error_list.append(f"detect different unique identification key - "
-                                      f"self: `{self_unqiue_identification}` | other: `{other_unqiue_identification}`")
+                                      f"self: `{self_unique_identification}` | other: `{other_unqiue_identification}`")
 
         for cur_field in dataclasses.fields(self.__class__):
-            if ignore_fields and cur_field.name in ignore_fields:
+            if ignore_field_lookups and cur_field.name in ignore_field_lookups:
                 #logger.warning(f'field `{cur_field.name}` will not be validated because it is on ignore list')
                 continue
             self_value = getattr(self, cur_field.name)
             other_value = getattr(other, cur_field.name)
 
             # set NOT_DEFINABLE in case all elements of the current objects are NOT_DEFINABLE
-            self_value = NOT_DEFINABLE if isinstance(self_value, SingleDataItem) and self_value.all_fields_are_not_definable() else self_value
-            other_value = NOT_DEFINABLE if isinstance(other_value, SingleDataItem) and other_value.all_fields_are_not_definable() else other_value
+            if isinstance(self_value, SingleDataItem) and self_value.all_fields_are_not_definable():
+                self_value = NOT_DEFINABLE
+            if isinstance(other_value, SingleDataItem) and other_value.all_fields_are_not_definable():
+                other_value = NOT_DEFINABLE
 
             if needs_to_be_checked(self_value, other_value):
                 raw_type, _ = get_data_item_type(cur_field)
@@ -388,10 +447,11 @@ class SingleDataItem(ABC):
                                     error_list.extend(cur_self_item.get_difference_error_messages(cur_other_item))
                                 else:
                                     # normal item -> compare values
-                                    if allow_non_definable and cur_self_item == NOT_DEFINABLE or cur_other_item is NOT_DEFINABLE:
+                                    one_is_not_def = cur_self_item == NOT_DEFINABLE or cur_other_item is NOT_DEFINABLE
+                                    if allow_non_definable and one_is_not_def:
                                         # okay
                                         continue
-                                    elif cur_self_item != cur_other_item:
+                                    if cur_self_item != cur_other_item:
                                         error_list.append(
                                             f"detect different value for dataclass field `{cur_field.name}` - "
                                             f"self: `{self_value}` | other: `{other_value}`")
@@ -402,12 +462,17 @@ class SingleDataItem(ABC):
 
                 if is_nested and self_value not in [None, NOT_DEFINABLE]:
                     # this is a nested item -> check it here too
-                    ignore_fields_for_subfield = [ignore[len(f"{cur_field.name}__"):] for ignore in ignore_fields if
-                                                  ignore.startswith(f"{cur_field.name}__")]
+                    ignore_fields_for_subfield = [
+                        ignore[len(f"{cur_field.name}__"):]
+                        for ignore in ignore_field_lookups
+                        if ignore.startswith(f"{cur_field.name}__")
+                    ]
 
                     if not self_value.compare(
-                            other_value, ignore_fields=ignore_fields_for_subfield, allow_non_definable=allow_non_definable,
-                            validate_unique_identification_seperatly='id' not in ignore_fields_for_subfield):
+                            other_value,
+                            ignore_field_lookups=ignore_fields_for_subfield,
+                            allow_non_definable=allow_non_definable,
+                            validate_unique_identification_separately='id' not in ignore_fields_for_subfield):
                         error_list.append(f"detect different value for nested dataclass field `{cur_field.name}` - "
                                           f"self: `{self_value}` | other: `{other_value}`")
                 elif allow_non_definable and self_value == NOT_DEFINABLE or other_value == NOT_DEFINABLE:

@@ -6,18 +6,32 @@ from balderhub.data.lib.utils import SingleDataItem
 
 
 class AbstractDataItemRelatedFeature(balder.Feature):
+    """
+    Base factory usable feature. All Features that should be creatable by a factory class needs to be a subclass of
+    this feature class.
+    """
+    #: static managing class property that stores parametrized feature class definitions per data item class
     _features_by_data_item_type = {}
 
     @property
     def data_item_type(self) -> Type[SingleDataItem]:
+        """
+        :return: returns the type of the data item, this feature belongs too
+        """
         if not hasattr(self.__class__, '_for_data_item_type'):
             raise ValueError(
                 f'data item related feature `{self.__class__}` was not registered for a specific data item'
             )
-        return self.__class__._for_data_item_type
+        return getattr(self.__class__, '_for_data_item_type')
 
     @classmethod
-    def set_data_item_type(cls, data_item_type: Type[SingleDataItem]):
+    def set_data_item_type(cls, data_item_type: Type[SingleDataItem]) -> None:
+        """
+        This class method sets the data-item type. This method is normally called by the decorator
+        `@register_for_data_item()`.
+
+        :param data_item_type: the data item type
+        """
         cls._for_data_item_type = data_item_type
         cls.register_feature_with_data_item_type(feature_cls=cls, data_item_type=data_item_type)
 
@@ -26,7 +40,13 @@ class AbstractDataItemRelatedFeature(balder.Feature):
             cls,
             feature_cls: type[AbstractDataItemRelatedFeature],
             data_item_type: Type[SingleDataItem]
-    ):
+    ) -> None:
+        """
+        Internally used class for managing the correct assignment of data item type to that feature.
+
+        :param feature_cls: the feature class type that should be registered
+        :param data_item_type: the data item type that should be assigned to the provided `feature_cls`
+        """
         if cls not in AbstractDataItemRelatedFeature._features_by_data_item_type.keys():
             AbstractDataItemRelatedFeature._features_by_data_item_type[cls] = {}
 
@@ -44,6 +64,14 @@ class AbstractDataItemRelatedFeature(balder.Feature):
 
     @classmethod
     def get_specific_feature_for(cls, data_item_type: Type[SingleDataItem], **vdevice_mapping):
+        """
+        This method returns an instantiated feature object that was previously registered for the provided
+        `data_item_type`.
+
+        :param data_item_type: the data item type the new instance should be for
+        :param vdevice_mapping: optional a vdevice mapping for the feature # TODO do use dict here
+        :return: returns a feature object of this type that was defined for the provided `data_item_type`
+        """
 
         available_feature_classes = \
             AbstractDataItemRelatedFeature._features_by_data_item_type.get(cls, {}).get(data_item_type, [])
