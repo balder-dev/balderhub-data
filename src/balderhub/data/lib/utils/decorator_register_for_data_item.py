@@ -1,5 +1,3 @@
-
-
 from __future__ import annotations
 from typing import Type
 
@@ -29,20 +27,18 @@ def register_for_data_item(
 
             func = args[0]
 
-            if inspect.isclass(func):
-                # it must be a class decorator
-                if not issubclass(func, AbstractDataItemRelatedFeature):
-                    raise TypeError(
-                        f"The decorator `@register_for_data_item` may only be used for "
-                        f"`AbstractDataItemRelatedFeature` objects. This is not possible for the applied class "
-                        f"`{func.__name__}`.")
-
-                func.set_data_item_type(data_item_type)
-
-                # directly return the class -> we do not want to manipulate it
-                return func
-            else:
+            if not inspect.isclass(func):
                 raise TypeError('The decorator `@register_for_data_item` may only be used for classes and not for '
                                 'functions or methods')
+            # it must be a class decorator
+            if not issubclass(func, AbstractDataItemRelatedFeature):
+                raise TypeError(
+                    f"The decorator `@register_for_data_item` may only be used for `AbstractDataItemRelatedFeature` "
+                    f"objects. This is not possible for the applied class `{func.__name__}`.")
+
+            func.set_data_item_type(data_item_type)
+
+            # directly return the class -> we do not want to manipulate it
+            return func
 
     return ForDataItemDecorator
