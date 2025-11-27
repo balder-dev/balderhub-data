@@ -98,19 +98,18 @@ class SingleDataItem(ABC):
         return cls.create_as_nested(**data)
 
     @classmethod
-    def get_field(cls, field_str: str) -> dataclasses.Field:
-        splitted_field_str = field_str.split("__")
+    def get_field(cls, field_lookup_str: str) -> dataclasses.Field:
+        splitted_field_str = field_lookup_str.split("__")
         first_field_part = splitted_field_str.pop(0)
         relevant_fields = [field for field in dataclasses.fields(cls) if field.name == first_field_part]
         if len(relevant_fields) == 1:
             if len(splitted_field_str) > 0:
                 subtype, _ = cls.get_field_data_type(first_field_part)
-                if issubclass(subtype, SingleDataItem):
-                    return subtype.get_field('__'.join(splitted_field_str))
-                else:
-                    raise KeyError(f'the subkey `{first_field_part}` does not reference a data item type in data item `{cls.__name__}`')
-            else:
-                return relevant_fields[0]
+                if not issubclass(subtype, SingleDataItem):
+                    raise KeyError(f'the subkey `{first_field_part}` does not reference a data item type in data '
+                                   f'item `{cls.__name__}`')
+                return subtype.get_field('__'.join(splitted_field_str))
+            return relevant_fields[0]
         raise KeyError(f'can not find a field `{first_field_part}` in data item `{cls.__name__}`')
 
     @classmethod
@@ -175,8 +174,8 @@ class SingleDataItem(ABC):
         return [field for field in all_fields if field not in except_fields]
 
     @classmethod
-    def get_field_data_type(cls, field_name: str) -> tuple[type, bool]:
-        splitted_field_names = field_name.split('__')
+    def get_field_data_type(cls, field_lookup_str: str) -> tuple[type, bool]:
+        splitted_field_names = field_lookup_str.split('__')
         cur_splitted_name = splitted_field_names.pop(0)
 
         all_relevant_fields = [field for field in dataclasses.fields(cls) if field.name == cur_splitted_name]
@@ -187,15 +186,14 @@ class SingleDataItem(ABC):
         if len(splitted_field_names) == 0:
             # this is the requested data type
             return cur_field_type, is_optional
-        if issubclass(cur_field_type, SingleDataItem):
-            return cur_field_type.get_field_data_type('__'.join(splitted_field_names))
-        else:
-            raise KeyError(f'can not resolve the field {field_name} for data item {cls.__name__}, '
+        if not issubclass(cur_field_type, SingleDataItem):
+            raise KeyError(f'can not resolve the field {field_lookup_str} for data item {cls.__name__}, '
                            f'because field is no data item class')
+        return cur_field_type.get_field_data_type('__'.join(splitted_field_names))
 
-    def get_field_value(self, field_name: str):
+    def get_field_value(self, field_lookup_str: str):
         item = self
-        for cur_splitted_name in field_name.split('__'):
+        for cur_splitted_name in field_lookup_str.split('__'):
             if item == NOT_DEFINABLE:
                 return NOT_DEFINABLE
             if not hasattr(item, cur_splitted_name):
