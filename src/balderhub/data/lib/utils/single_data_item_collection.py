@@ -24,13 +24,13 @@ class SingleDataItemCollection:
     def __getitem__(self, index):
         return self._items[index]
 
-    def filter(self, filter: Filter | None):
-        if filter is None:
+    def filter(self, filter_obj: Filter | None) -> SingleDataItemCollection:
+        if filter_obj is None:
             return self.__class__(self._items)
 
         remaining_items = []
         for item in self._items:
-            if filter.apply(item):
+            if filter_obj.apply(item):
                 remaining_items.append(item)
         return self.__class__(remaining_items)
 
