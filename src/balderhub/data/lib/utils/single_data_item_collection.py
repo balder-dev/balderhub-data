@@ -45,7 +45,7 @@ class SingleDataItemCollection:
     def get_all_unique_identifier(self):
         return [item.get_unique_identification() for item in self._items]
 
-    def has_unique_identifier(self) -> bool:
+    def has_unique_elements(self) -> bool:
         return len(self._items) == len(set(self.get_all_unique_identifier()))
 
     def get_by_identifier(self, identifier: Any):
