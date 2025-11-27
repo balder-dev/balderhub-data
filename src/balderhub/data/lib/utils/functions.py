@@ -5,6 +5,20 @@ import dataclasses
 
 
 def convert_field_lookups_to_dict_structure(dictionary: Union[dict, list], nested=True) -> Union[dict, list]:
+    """
+    This method converts filed-lookups into a dictionary structure.
+
+    Example:
+
+    .. code-block:: python
+        >>> convert_field_lookups_to_dict_structure({'a__d': 3.2, 'a__b__c': 2, 'a__b__d': 3, 'a__c': 'H', 'b': 3})
+        {'a': {'d': 3.2, 'b': {'c': 2, 'd': 3}, 'c': 'H'}, 'b': 3}
+
+    :param dictionary: a flat dictionary with field-lookups as keys and their values as values.
+    :param nested: False if the function should only return the first level - True if it should return nested
+                   directories.
+    :return: the converted (nested) dictionary
+    """
     if isinstance(dictionary, list):
         return [convert_field_lookups_to_dict_structure(cur_item) for cur_item in dictionary]
 
@@ -37,11 +51,17 @@ def convert_field_lookups_to_dict_structure(dictionary: Union[dict, list], neste
             result[cur_key] = convert_field_lookups_to_dict_structure(result[cur_key], nested=True)
     return result
 
+
 def convert_dict_structure_to_field_lookups(dictionary: Union[dict, list]) -> Union[dict, list]:
     """
-    This method converts the nested dictionary structure to a flat dictionary
-    :param dictionary:
-    :return:
+    This method converts the nested dictionary structure to a flat dictionary by using lookup-fields as key:
+
+    .. code-block:: python
+        >>> convert_dict_structure_to_field_lookups({'a': {'d': 3.2, 'b': {'c': 2, 'd': 3}, 'c': 'H'}, 'b': 3})
+        {'a__d': 3.2, 'a__b__c': 2, 'a__b__d': 3, 'a__c': 'H', 'b': 3}
+
+    :param dictionary: the nested dictionary structure
+    :return: the flat directory while using lookup-fields as key:
     """
 
     if isinstance(dictionary, list):
@@ -114,14 +134,14 @@ def get_inner_type_of_list_type(definition: type) -> type:
     # check inner type
     inner_args = get_args(definition)
     if len(inner_args) == 0:
-        raise TypeError(f'list needs to have exactly one item type definition -> none detected')
+        raise TypeError('list needs to have exactly one item type definition -> none detected')
     if len(inner_args) != 1:
         raise TypeError(f"list needs to have exactly one item type definition -> multiple detected: `{inner_args}`")
     return inner_args[0]
 
 
 def field_contained_in(field: Field, list_of_resolved_field):
-    from .single_data_item import SingleDataItem
+    from .single_data_item import SingleDataItem  # pylint: disable=import-outside-toplevel
 
     if field.name in list_of_resolved_field:
         return True

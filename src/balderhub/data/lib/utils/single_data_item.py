@@ -16,15 +16,26 @@ SingleDataItemTypeT = TypeVar("SingleDataItemTypeT", bound="SingleDataItem")
 
 @dataclasses.dataclass
 class SingleDataItem(ABC):
+    """
+    This is a base class for data items. Data items are python dataclasses that are used for defining the model to test.
+    """
 
     @abstractmethod
     def get_unique_identification(self):
+        """
+        Individual method that returns a unique identifier for the data item.
+        :return: a unique identifier for the specific data item object
+        """
         raise NotImplementedError
 
     @classmethod
     def create_as_nested(cls, **kwargs):
+        """
+        Class method for create a data item out of field-lookups (attribute name)
+        :param kwargs: the field lookups with its value
+        :return: the instantiated data item
+        """
         kwargs_splitted = convert_field_lookups_to_dict_structure(kwargs, nested=False)
-
 
         dataclass_fields = dataclasses.fields(cls)
 
@@ -99,6 +110,11 @@ class SingleDataItem(ABC):
 
     @classmethod
     def get_field(cls, field_lookup_str: str) -> dataclasses.Field:
+        """
+        Returns the specific data class field by its field lookup name
+        :param field_lookup_str: the field lookup string
+        :return: the data class field
+        """
         splitted_field_str = field_lookup_str.split("__")
         first_field_part = splitted_field_str.pop(0)
         relevant_fields = [field for field in dataclasses.fields(cls) if field.name == first_field_part]
@@ -175,6 +191,11 @@ class SingleDataItem(ABC):
 
     @classmethod
     def get_field_data_type(cls, field_lookup_str: str) -> tuple[type, bool]:
+        """
+        This method returns the specific data type of a field. It automatically resolves subscripted type definitions.
+        :param field_lookup_str: the field lookup string
+        :return: the unsubscripted field type
+        """
         splitted_field_names = field_lookup_str.split('__')
         cur_splitted_name = splitted_field_names.pop(0)
 
@@ -192,6 +213,11 @@ class SingleDataItem(ABC):
         return cur_field_type.get_field_data_type('__'.join(splitted_field_names))
 
     def get_field_value(self, field_lookup_str: str):
+        """
+        This method returns the value of the provided field.
+        :param field_lookup_str: the field lookup string
+        :return: the field value
+        """
         item = self
         for cur_splitted_name in field_lookup_str.split('__'):
             if item == NOT_DEFINABLE:
@@ -310,6 +336,17 @@ class SingleDataItem(ABC):
             allow_non_definable: bool = False,
             validate_unique_identification_separately=True
     ) -> bool:
+        """
+        This method compares a data item with another data item from same type.
+        :param other: the other data item to compare with
+        :param ignore_field_lookups: a list with field lookups that should be ignored
+        :param allow_non_definable: True if the method should ignore fields for which one data item has the value
+                                    `NOT_DEFINABLE`
+        :param validate_unique_identification_separately: True if the method should validate the unique-identification
+                                                          value (provided with
+                                                          :meth:`SingleDataItem.get_unique_identification`) separately
+        :return: True if the data of both data item objects are equal
+        """
         error_msgs = self.get_difference_error_messages(
             other=other, ignore_field_lookups=ignore_field_lookups, allow_non_definable=allow_non_definable,
             validate_unique_identification_separately=validate_unique_identification_separately)
@@ -322,6 +359,17 @@ class SingleDataItem(ABC):
             allow_non_definable: bool = False,
             validate_unique_identification_separately=True
     ) -> List[str]:
+        """
+
+        :param other: the other data item to compare with
+        :param ignore_field_lookups: a list with field lookups that should be ignored
+        :param allow_non_definable: True if the method should ignore fields for which one data item has the value
+                                    `NOT_DEFINABLE`
+        :param validate_unique_identification_separately: True if the method should validate the unique-identification
+                                                          value (provided with
+                                                          :meth:`SingleDataItem.get_unique_identification`) separately
+        :return: A list with detected error messages
+        """
 
         if allow_non_definable and (self.all_fields_are_not_definable() or other == NOT_DEFINABLE):
             return []

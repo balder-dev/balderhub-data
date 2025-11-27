@@ -10,15 +10,25 @@ from balderhub.data.lib.utils.single_data_item import SingleDataItemTypeT
 
 
 class MultipleDataConfig(AbstractDataItemRelatedFeature):
+    """
+    This config feature returns a list of data item elements.
+    """
 
     class DoesNotExist(Exception):
-        pass
+        """
+        raised in case that the requested data item does not exist
+        """
 
     class MultipleElementsReturned(Exception):
-        pass
+        """
+        raised in case there are more than one matching elements in the list
+        """
 
     @property
     def data_list(self) -> SingleDataItemCollection:
+        """
+        :return: returns the data item collection this config feature describes
+        """
         raise NotImplementedError()
 
     def get_for_identifier(self, identifier) -> SingleDataItemTypeT | None:

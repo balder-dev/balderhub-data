@@ -4,6 +4,10 @@ import dataclasses
 
 @dataclasses.dataclass
 class ResponseMessage:
+    """
+    Response message object, that is used for validating responses from data interactions.
+    """
+    # TODO should we make this more flexible by using a base class without elements?
     text: str
     body: str = None
 
