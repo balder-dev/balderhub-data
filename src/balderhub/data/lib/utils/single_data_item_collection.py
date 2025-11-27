@@ -66,7 +66,7 @@ class SingleDataItemCollection:
             self,
             other_collection: SingleDataItemCollection,
             ignore_order: bool = False,
-            ignore_fields: List[str] = None,
+            ignore_field_lookups: List[str] = None,
             allow_non_definable: bool = False,
     ) -> List[str]:
         if len(self) != len(other_collection):
@@ -82,19 +82,25 @@ class SingleDataItemCollection:
         for idx in range(len(self)):
             cur_self = self_copy[idx]
             cur_other = other_copy[idx]
-            result.extend(cur_self.get_difference_error_messages(cur_other, ignore_fields,
-                                                                 allow_non_definable=allow_non_definable))
+            result.extend(cur_self.get_difference_error_messages(
+                cur_other,
+                ignore_field_lookups,
+                allow_non_definable=allow_non_definable)
+            )
         return result
 
     def compare(
             self,
             other_collection: SingleDataItemCollection,
             ignore_order: bool = False,
-            ignore_fields: List[str] = None,
+            ignore_field_lookups: List[str] = None,
             allow_non_definable: bool = False,
     ) -> bool:
-        return self.get_difference_error_messages(
-            other_collection,
-            ignore_order=ignore_order,
-            ignore_fields=ignore_fields,
-            allow_non_definable=allow_non_definable) == []
+        return not bool(
+            self.get_difference_error_messages(
+                other_collection,
+                ignore_order=ignore_order,
+                ignore_field_lookups=ignore_field_lookups,
+                allow_non_definable=allow_non_definable
+            )
+        )
