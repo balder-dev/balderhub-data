@@ -11,7 +11,7 @@ from .not_definable import NOT_DEFINABLE
 
 logger = logging.getLogger(__name__)
 
-SingleDataItemType = TypeVar("SingleDataItemType", bound="SingleDataItem")
+SingleDataItemTypeT = TypeVar("SingleDataItemTypeT", bound="SingleDataItem")
 
 
 @dataclasses.dataclass
@@ -88,7 +88,7 @@ class SingleDataItem(ABC):
         return cls(**fields_for_obj)
 
     @classmethod
-    def create_non_definable(cls, nested=True) -> SingleDataItemType:
+    def create_non_definable(cls, nested=True) -> SingleDataItemTypeT:
         """
         :return: returns instance of this  data item with `NON_DEFINABLE` for every field
         """
@@ -305,14 +305,14 @@ class SingleDataItem(ABC):
                 return False
         return True
 
-    def compare(self, other: SingleDataItemType, ignore_fields: List[str] | None = None,
+    def compare(self, other: SingleDataItemTypeT, ignore_fields: List[str] | None = None,
                 allow_non_definable: bool = False, validate_unique_identification_seperatly=True) -> bool:
         error_msgs = self.get_difference_error_messages(
             other=other, ignore_fields=ignore_fields, allow_non_definable=allow_non_definable,
             validate_unique_identification_seperatly=validate_unique_identification_seperatly)
         return len(error_msgs) == 0
 
-    def get_difference_error_messages(self, other: SingleDataItemType, ignore_fields: List[str] | None = None,
+    def get_difference_error_messages(self, other: SingleDataItemTypeT, ignore_fields: List[str] | None = None,
                                       allow_non_definable: bool = False, validate_unique_identification_seperatly=True) -> List[str]:
 
         if allow_non_definable and (self.all_fields_are_not_definable() or other == NOT_DEFINABLE):
