@@ -14,7 +14,7 @@ class AbstractDataItemRelatedFeature(balder.Feature):
             raise ValueError(
                 f'data item related feature `{self.__class__}` was not registered for a specific data item'
             )
-        return self.__class__._for_data_item_type
+        return getattr(self.__class__, '_for_data_item_type')
 
     @classmethod
     def set_data_item_type(cls, data_item_type: Type[SingleDataItem]):
