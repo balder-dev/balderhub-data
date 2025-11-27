@@ -1,4 +1,3 @@
-from typing import List, Any
 import dataclasses
 
 import balderhub.data.lib.utils
@@ -18,8 +17,8 @@ class ExampleFieldValueProviderFeature(AbstractDataItemRelatedFeature):
         def __str__(self):
             return f"FieldValueExample<{self.field_name}: {self.name}>"
 
-    def get_valid_new_value_for_field(self, data_item: SingleDataItem, field: str) -> Any:
+    def get_valid_new_value_for_field(self, data_item: SingleDataItem, field: str) -> list[NamedExample]:
         raise NotImplementedError
 
-    def get_invalid_new_value_for_field(self, data_item: SingleDataItem, field: str) -> Any:
+    def get_invalid_new_value_for_field(self, data_item: SingleDataItem, field: str) -> list[NamedExample]:
         raise NotImplementedError
