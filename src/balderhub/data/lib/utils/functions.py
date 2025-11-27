@@ -79,22 +79,26 @@ def get_data_item_type(field: dataclasses.Field) -> tuple[type, bool]:
     # references another type definition
     if get_origin(field.type) in [list, List]:
         return list[get_data_item_type(get_args(field.type)[0])], False
-    elif get_origin(field.type) is Optional:
+
+    if get_origin(field.type) is Optional:
         inner_args = get_args(field.type)
         result_type, _ = get_data_item_type(inner_args[0])
         return result_type, True
-    elif get_origin(field.type) is Union:
+
+    if get_origin(field.type) is Union:
         inner_args = list(get_args(field.type))
+
         if len(inner_args) == 1:
             return inner_args[0], False
-        elif len(inner_args) == 2 and none_type in inner_args:
+
+        if len(inner_args) == 2 and none_type in inner_args:
             # make sure that `None` is part of it
             inner_args.remove(none_type)
             return inner_args[0], True
-        else:
-            raise TypeError('unsupported union type')
-    else:
-        raise TypeError(f'type definition `{field.type}` are not possible in balderhub-data dataclasses')
+
+        raise TypeError('unsupported union type')
+
+    raise TypeError(f'type definition `{field.type}` are not possible in balderhub-data dataclasses')
 
 
 def get_inner_type_of_list_type(definition: type) -> type:
