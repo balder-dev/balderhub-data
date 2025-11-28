@@ -4,7 +4,7 @@ from typing import List
 import random
 
 from balderhub.data.lib.utils import SingleDataItemCollection
-from balderhub.data.lib.utils.abstract_data_item_related_feature import AbstractDataItemRelatedFeature
+from balderhub.data.lib.scenario_features.abstract_data_item_related_feature import AbstractDataItemRelatedFeature
 from balderhub.data.lib.utils.single_data_item import SingleDataItemTypeT
 
 
