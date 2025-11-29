@@ -1,3 +1,4 @@
+from .auto_feature_factory import AutoFeatureFactory
 from .not_definable import NOT_DEFINABLE
 from .response_message import ResponseMessage
 from .response_message_list import ResponseMessageList
