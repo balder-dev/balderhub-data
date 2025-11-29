@@ -1,6 +1,5 @@
 import dataclasses
 
-import balderhub.data.lib.utils
 from balderhub.data.lib.utils import SingleDataItem, ResponseMessageList
 from balderhub.data.lib.scenario_features.abstract_data_item_related_feature import AbstractDataItemRelatedFeature
 
@@ -15,7 +14,7 @@ class ExampleFieldValueProviderFeature(AbstractDataItemRelatedFeature):
         """internal data class that describes an example"""
         name: str
         field_name: str
-        new_field_value: balderhub.data.lib.utils.SingleDataItem
+        new_field_value: SingleDataItem
         expected_response_messages: ResponseMessageList = ResponseMessageList()
 
         def __str__(self):
