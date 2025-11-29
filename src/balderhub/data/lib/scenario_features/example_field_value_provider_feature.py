@@ -2,7 +2,7 @@ import dataclasses
 
 import balderhub.data.lib.utils
 from balderhub.data.lib.utils import SingleDataItem, ResponseMessageList
-from balderhub.data.lib.utils.abstract_data_item_related_feature import AbstractDataItemRelatedFeature
+from balderhub.data.lib.scenario_features.abstract_data_item_related_feature import AbstractDataItemRelatedFeature
 
 
 class ExampleFieldValueProviderFeature(AbstractDataItemRelatedFeature):
