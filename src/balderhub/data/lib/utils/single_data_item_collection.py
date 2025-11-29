@@ -95,6 +95,24 @@ class SingleDataItemCollection:
             raise KeyError(f'multiple items with identifier `{identifier}` exists')
         return remaining[0]
 
+    def filter_by(self, **kwargs) -> SingleDataItemCollection:
+        """
+        This method returns a new collection with the applied filters. You can use lookup-field syntax for defining
+        the filter statements.
+
+        :param kwargs: the filter variables
+        :return: a new collection that holds the filtered subset
+        """
+        result = []
+        for cur_elem in self._items:
+            match = True
+            for field_lookup_str, value in kwargs.items():
+                if cur_elem.get_field_value(field_lookup_str) != value:
+                    match = False
+                    break
+            if match:
+                result.append(cur_elem)
+        return SingleDataItemCollection(result)
 
     def get_random(self) -> SingleDataItem:
         """

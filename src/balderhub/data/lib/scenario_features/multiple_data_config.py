@@ -36,20 +36,6 @@ class MultipleDataConfig(AbstractDataItemRelatedFeature):
             raise ValueError(f'found more than one elements with identifier {identifier}')
         return elems[0]
 
-    def filter_by(self, **kwargs) -> list[SingleDataItemTypeT]:
-        # TODO remove here and add in SingleDataItemCollection!
-
-        result = []
-        for cur_elem in self.data_list:
-            match = True
-            for name, value in kwargs.items():
-                if getattr(cur_elem, name) != value:
-                    match = False
-                    break
-            if match:
-                result.append(cur_elem)
-        return result
-
     def get_by(self, **kwargs) -> list[SingleDataItemTypeT]:
         # TODO remove here and add in SingleDataItemCollection!
         result = self.filter_by(**kwargs)
