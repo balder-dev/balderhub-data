@@ -1,12 +1,9 @@
-from __future__ import annotations
-from typing import List
-
 import random
 
-from balderhub.data.lib.utils import SingleDataItemCollection
-from balderhub.data.lib.scenario_features.abstract_data_item_related_feature import AbstractDataItemRelatedFeature
-from balderhub.data.lib.utils.single_data_item import SingleDataItemTypeT
+from .abstract_data_item_related_feature import AbstractDataItemRelatedFeature
 
+from ..utils.single_data_item import SingleDataItemTypeT
+from ..utils.single_data_item_collection import SingleDataItemCollection
 
 
 class MultipleDataConfig(AbstractDataItemRelatedFeature):
@@ -41,7 +38,7 @@ class MultipleDataConfig(AbstractDataItemRelatedFeature):
             raise ValueError(f'found more than one elements with identifier {identifier}')
         return elems[0]
 
-    def filter_by(self, **kwargs) -> List[SingleDataItemTypeT]:
+    def filter_by(self, **kwargs) -> list[SingleDataItemTypeT]:
         # TODO remove here and add in SingleDataItemCollection!
 
         result = []
@@ -55,7 +52,7 @@ class MultipleDataConfig(AbstractDataItemRelatedFeature):
                 result.append(cur_elem)
         return result
 
-    def get_by(self, **kwargs) -> List[SingleDataItemTypeT]:
+    def get_by(self, **kwargs) -> list[SingleDataItemTypeT]:
         # TODO remove here and add in SingleDataItemCollection!
         result = self.filter_by(**kwargs)
         if len(result) == 0:

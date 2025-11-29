@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Type
 import balder
 
-from balderhub.data.lib.utils import SingleDataItem
+from ..utils.single_data_item import SingleDataItem
 
 
 class AbstractDataItemRelatedFeature(balder.Feature):
