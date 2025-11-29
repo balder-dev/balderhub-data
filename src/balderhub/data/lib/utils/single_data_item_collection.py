@@ -12,6 +12,16 @@ class SingleDataItemCollection:
     helper class to manage a collection of SingleDateItems
     """
 
+    class DoesNotExist(Exception):
+        """
+        raised in case that the requested data item does not exist
+        """
+
+    class MultipleElementsReturned(Exception):
+        """
+        raised in case there are more than one matching elements in the list
+        """
+
     def __init__(self, items: List[SingleDataItem]):
         self._items = items
 
@@ -113,6 +123,25 @@ class SingleDataItemCollection:
             if match:
                 result.append(cur_elem)
         return SingleDataItemCollection(result)
+
+    def get_by(self, **kwargs) -> SingleDataItem:
+        """
+        This method returns a single element defined by the provided filters. You can use lookup-field syntax for
+        defining the filter statements.
+
+        .. note::
+            The filters need to specify exactly one element, otherwise the method raises an exception.
+
+        :param kwargs: the filter variables
+        :return:
+        """
+        result = self.filter_by(**kwargs)
+        if len(result) == 0:
+            raise self.DoesNotExist(f'can not find a item for given filter attributes `{kwargs}`')
+        if len(result) > 1:
+            raise self.MultipleElementsReturned(f"found more than one element for given filter attributes `{kwargs}` - "
+                                                f"use `filter_by()` if you want to retrieve multiple objects")
+        return result[0]
 
     def get_random(self) -> SingleDataItem:
         """
