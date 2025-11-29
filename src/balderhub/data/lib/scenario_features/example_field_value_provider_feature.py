@@ -1,3 +1,4 @@
+from typing import Any
 import dataclasses
 
 from .abstract_data_item_related_feature import AbstractDataItemRelatedFeature
@@ -15,7 +16,7 @@ class ExampleFieldValueProviderFeature(AbstractDataItemRelatedFeature):
         """internal data class that describes an example"""
         name: str
         field_name: str
-        new_field_value: SingleDataItem
+        new_field_value: Any
         expected_response_messages: ResponseMessageList = ResponseMessageList()
 
         def __str__(self):
