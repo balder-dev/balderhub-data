@@ -1,7 +1,9 @@
 from __future__ import annotations
-from typing import List, Any, Callable
-from balderhub.data.lib.utils import SingleDataItem
-from balderhub.data.lib.utils.filter import Filter
+from typing import List, Any, Callable, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .filter import Filter
+    from .single_data_item import SingleDataItem
 
 
 class SingleDataItemCollection:
