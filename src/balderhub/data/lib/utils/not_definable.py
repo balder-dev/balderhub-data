@@ -1,3 +1,6 @@
+from typing import Any
+from pydantic_core import CoreSchema, core_schema
+from pydantic import GetCoreSchemaHandler
 
 
 # pylint: disable-next=invalid-name
@@ -18,5 +21,15 @@ class _NOT_DEFINABLE_TYPE:
 
     def __eq__(self, other):
         return isinstance(other, _NOT_DEFINABLE_TYPE)
+
+
+    @classmethod
+    # pylint: disable-next=unused-argument
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
+        """
+        as it is a singleton class - checking to be a instance is enough
+        """
+        return core_schema.is_instance_schema(cls)
+
 
 NOT_DEFINABLE = _NOT_DEFINABLE_TYPE()
