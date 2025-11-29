@@ -1,7 +1,7 @@
 import dataclasses
 from typing import List, Optional, Union, get_args, get_origin
 
-from .exceptions import MisconfiguredDataclassError
+from .exceptions import MisconfiguredDataItemError
 
 # TODO also forbid loops
 
@@ -50,18 +50,18 @@ def dataitem(cls=None, /, *, init=True, repr=True, eq=True, order=False,
             # references a type
             return
         if not allow_nesting:
-            raise MisconfiguredDataclassError('nesting typing is only allowed for list')
+            raise MisconfiguredDataItemError('nesting typing is only allowed for list')
         # references another type definition
         if get_origin(type_def) in [list, List]:
             inner_args = get_args(type_def)
             if len(inner_args) != 1:
-                raise MisconfiguredDataclassError('list type definition can only have one argument for '
+                raise MisconfiguredDataItemError('list type definition can only have one argument for '
                                                   'balderhub-data dataclasses')
             _validate_element(inner_args[0])
         elif get_origin(type_def) is Optional:
             inner_args = get_args(type_def)
             if len(inner_args) != 1:
-                raise MisconfiguredDataclassError('Option type definition can only have one argument for '
+                raise MisconfiguredDataItemError('Option type definition can only have one argument for '
                                                   'balderhub-data dataclasses')
             _validate_element(inner_args[0], allow_nesting=False)
         elif get_origin(type_def) is Union:
@@ -73,16 +73,16 @@ def dataitem(cls=None, /, *, init=True, repr=True, eq=True, order=False,
                 inner_args.remove(none_type)
                 _validate_element(inner_args[0], allow_nesting=False)
             else:
-                raise MisconfiguredDataclassError('Union type definition with multiple inner arguments '
+                raise MisconfiguredDataItemError('Union type definition with multiple inner arguments '
                                                   '(except None) is not allowed in balderhub-data dataclasses')
         else:
-            raise MisconfiguredDataclassError(f'type definition `{type_def}` are not possible in balderhub-data '
+            raise MisconfiguredDataItemError(f'type definition `{type_def}` are not possible in balderhub-data '
                                               f'dataclasses')
 
     # validate used fields
     for cur_field in dataclasses.fields(wrapped_cls):
         if cur_field.default is not dataclasses.MISSING and cur_field.default_factory is not dataclasses.MISSING:
-            raise MisconfiguredDataclassError(f"{cur_field.name} has default value which is not allowed for "
+            raise MisconfiguredDataItemError(f"{cur_field.name} has default value which is not allowed for "
                                               f"balderhub-data dataclasses")
         _validate_element(cur_field.type)
     return wrapped_cls
