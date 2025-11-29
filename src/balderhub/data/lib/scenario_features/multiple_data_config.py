@@ -1,5 +1,3 @@
-import random
-
 from .abstract_data_item_related_feature import AbstractDataItemRelatedFeature
 
 from ..utils.single_data_item import SingleDataItemTypeT
@@ -61,7 +59,3 @@ class MultipleDataConfig(AbstractDataItemRelatedFeature):
             raise self.MultipleElementsReturned(f"found more than one element for given filter attributes `{kwargs}` - "
                                                 f"use `filter_by()` if you want to retrieve multiple objects")
         return result[0]
-
-    def get_random(self) -> SingleDataItemTypeT:
-        # TODO remove here and add in SingleDataItemCollection!
-        return random.choice(self.data_list)

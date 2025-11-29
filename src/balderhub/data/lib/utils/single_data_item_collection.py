@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import List, Any, Callable, TYPE_CHECKING
+import random
 
 if TYPE_CHECKING:
     from .filter import Filter
@@ -93,6 +94,13 @@ class SingleDataItemCollection:
         if len(remaining) > 1:
             raise KeyError(f'multiple items with identifier `{identifier}` exists')
         return remaining[0]
+
+
+    def get_random(self) -> SingleDataItem:
+        """
+        :return: returns a random element
+        """
+        return random.choice(self._items)
 
     def append(self, item: SingleDataItem) -> None:
         """
