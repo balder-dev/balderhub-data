@@ -1,13 +1,26 @@
 from __future__ import annotations
-from typing import List, Any, Callable
-from balderhub.data.lib.utils import SingleDataItem
-from balderhub.data.lib.utils.filter import Filter
+from typing import List, Any, Callable, TYPE_CHECKING
+import random
+
+if TYPE_CHECKING:
+    from .filter import Filter
+    from .single_data_item import SingleDataItem
 
 
 class SingleDataItemCollection:
     """
     helper class to manage a collection of SingleDateItems
     """
+
+    class DoesNotExist(Exception):
+        """
+        raised in case that the requested data item does not exist
+        """
+
+    class MultipleElementsReturned(Exception):
+        """
+        raised in case there are more than one matching elements in the list
+        """
 
     def __init__(self, items: List[SingleDataItem]):
         self._items = items
@@ -91,6 +104,50 @@ class SingleDataItemCollection:
         if len(remaining) > 1:
             raise KeyError(f'multiple items with identifier `{identifier}` exists')
         return remaining[0]
+
+    def filter_by(self, **kwargs) -> SingleDataItemCollection:
+        """
+        This method returns a new collection with the applied filters. You can use lookup-field syntax for defining
+        the filter statements.
+
+        :param kwargs: the filter variables
+        :return: a new collection that holds the filtered subset
+        """
+        result = []
+        for cur_elem in self._items:
+            match = True
+            for field_lookup_str, value in kwargs.items():
+                if cur_elem.get_field_value(field_lookup_str) != value:
+                    match = False
+                    break
+            if match:
+                result.append(cur_elem)
+        return SingleDataItemCollection(result)
+
+    def get_by(self, **kwargs) -> SingleDataItem:
+        """
+        This method returns a single element defined by the provided filters. You can use lookup-field syntax for
+        defining the filter statements.
+
+        .. note::
+            The filters need to specify exactly one element, otherwise the method raises an exception.
+
+        :param kwargs: the filter variables
+        :return:
+        """
+        result = self.filter_by(**kwargs)
+        if len(result) == 0:
+            raise self.DoesNotExist(f'can not find a item for given filter attributes `{kwargs}`')
+        if len(result) > 1:
+            raise self.MultipleElementsReturned(f"found more than one element for given filter attributes `{kwargs}` - "
+                                                f"use `filter_by()` if you want to retrieve multiple objects")
+        return result[0]
+
+    def get_random(self) -> SingleDataItem:
+        """
+        :return: returns a random element
+        """
+        return random.choice(self._items)
 
     def append(self, item: SingleDataItem) -> None:
         """

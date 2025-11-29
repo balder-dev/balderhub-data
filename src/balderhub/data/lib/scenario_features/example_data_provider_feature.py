@@ -1,8 +1,9 @@
 import dataclasses
 
-import balderhub.data.lib.utils
 from balderhub.data.lib.scenario_features.abstract_data_item_related_feature import AbstractDataItemRelatedFeature
-from balderhub.data.lib.utils import ResponseMessageList
+
+from ..utils.response_message_list import ResponseMessageList
+from ..utils.single_data_item import SingleDataItem
 
 
 class ExampleDataProviderFeature(AbstractDataItemRelatedFeature):
@@ -14,7 +15,7 @@ class ExampleDataProviderFeature(AbstractDataItemRelatedFeature):
     class NamedExample:
         """internal data class that describes an example"""
         name: str
-        data: balderhub.data.lib.utils.SingleDataItem
+        data: SingleDataItem
         expected_response_messages: ResponseMessageList = ResponseMessageList()
 
         def __str__(self):

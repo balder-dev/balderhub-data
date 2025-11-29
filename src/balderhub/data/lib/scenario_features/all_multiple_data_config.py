@@ -1,5 +1,5 @@
 from .multiple_data_config import MultipleDataConfig
-from ..utils import SingleDataItemCollection
+from ..utils.single_data_item_collection import SingleDataItemCollection
 
 
 class AllMultipleDataConfig(MultipleDataConfig):

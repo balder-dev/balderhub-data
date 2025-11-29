@@ -1,8 +1,9 @@
+from typing import Any
 import dataclasses
 
-import balderhub.data.lib.utils
-from balderhub.data.lib.utils import SingleDataItem, ResponseMessageList
-from balderhub.data.lib.scenario_features.abstract_data_item_related_feature import AbstractDataItemRelatedFeature
+from .abstract_data_item_related_feature import AbstractDataItemRelatedFeature
+from ..utils.response_message_list import ResponseMessageList
+from ..utils.single_data_item import SingleDataItem
 
 
 class ExampleFieldValueProviderFeature(AbstractDataItemRelatedFeature):
@@ -15,7 +16,7 @@ class ExampleFieldValueProviderFeature(AbstractDataItemRelatedFeature):
         """internal data class that describes an example"""
         name: str
         field_name: str
-        new_field_value: balderhub.data.lib.utils.SingleDataItem
+        new_field_value: Any
         expected_response_messages: ResponseMessageList = ResponseMessageList()
 
         def __str__(self):
