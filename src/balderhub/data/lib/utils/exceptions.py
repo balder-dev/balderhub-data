@@ -1,6 +1,6 @@
 
 
-class MisconfiguredDataclassError(Exception):
+class MisconfiguredDataItemError(Exception):
     """
     exception that is thrown in case the data items are misconfigured
     """
