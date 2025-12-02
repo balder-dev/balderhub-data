@@ -53,3 +53,6 @@ class LookupFieldString:
         if not isinstance(other, (LookupFieldString, str)):
             return False
         return str(self) == str(other)
+
+    def __hash__(self):
+        return hash(str(self))
