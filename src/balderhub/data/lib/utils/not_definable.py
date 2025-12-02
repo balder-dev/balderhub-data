@@ -22,6 +22,8 @@ class _NOT_DEFINABLE_TYPE:
     def __eq__(self, other):
         return isinstance(other, _NOT_DEFINABLE_TYPE)
 
+    def __hash__(self):
+        return hash(type(self))
 
     @classmethod
     # pylint: disable-next=unused-argument
