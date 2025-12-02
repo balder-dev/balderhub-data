@@ -25,6 +25,9 @@ class SingleDataItemCollection:
     def __init__(self, items: List[SingleDataItem]):
         self._items = items
 
+    def __repr__(self):
+        return str(f"{self.__class__.__name__}(items={self._items.__repr__()})")
+
     def __bool__(self):
         return bool(self._items)
 
