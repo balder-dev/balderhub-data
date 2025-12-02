@@ -1,4 +1,7 @@
-from typing import Union
+from typing import Union, Any
+
+from .not_definable import NOT_DEFINABLE
+from .lookup_field_string import LookupFieldString
 
 
 def convert_field_lookups_to_dict_structure(dictionary: Union[dict, list], nested=True) -> Union[dict, list]:
@@ -75,3 +78,42 @@ def convert_dict_structure_to_field_lookups(dictionary: Union[dict, list]) -> Un
         else:
             result[cur_key] = cur_value
     return result
+
+
+def set_lookup_field_in_data_dict(
+        data_dict: dict[str, Any],
+        field_to_set: Union[LookupFieldString, str],
+        value_to_set: Any
+) -> None:
+    """
+    Helper function to set a lookup-field within a nested dictionary structure
+    :param data_dict: the nested data dictionary the value should be set
+    :param field_to_set: the field lookup
+    :param value_to_set: the value that should be set
+    """
+    field_to_set = LookupFieldString(field_to_set)
+
+    if not isinstance(data_dict, dict):
+        raise TypeError(f'the attribute `data_dict` needs to be a dictionary')
+
+    cur_dict = data_dict
+    for cur_idx, cur_key in enumerate(field_to_set.split_field_keys[:-1]):
+        cur_key_chain = field_to_set.split_field_keys[:cur_idx]
+        if cur_key not in cur_dict.keys():
+            raise KeyError(
+                f'can not locate key `{".".join(field_to_set.split_field_keys)}`, because the nested '
+                f'subkey `{".".join(cur_key_chain)}` does not exist within dictionary `{data_dict}`'
+            )
+        cur_dict = cur_dict[cur_key]
+        if not isinstance(cur_dict, dict):
+            raise ValueError(
+                f'can not locate key `{".".join(field_to_set.split_field_keys)}`, because the nested '
+                f'element at subkey `{".".join(cur_key_chain)}` is not a dictionary (is: `{type(cur_dict)}`)'
+            )
+
+    if field_to_set.split_field_keys[-1] not in cur_dict.keys():
+        raise KeyError(f'can not update value at key `{".".join(field_to_set.split_field_keys)}`, because the field '
+                       f'`{".".join(field_to_set.split_field_keys)}` does not exist')
+
+    cur_dict[field_to_set.split_field_keys[-1]] = value_to_set
+
