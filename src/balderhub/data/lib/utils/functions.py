@@ -94,7 +94,7 @@ def set_lookup_field_in_data_dict(
     field_to_set = LookupFieldString(field_to_set)
 
     if not isinstance(data_dict, dict):
-        raise TypeError(f'the attribute `data_dict` needs to be a dictionary')
+        raise TypeError(f'the attribute `data_dict` needs to be a dictionary (is `{type(data_dict)}`)')
 
     cur_dict = data_dict
     for cur_idx, cur_key in enumerate(field_to_set.split_field_keys[:-1]):
@@ -117,3 +117,18 @@ def set_lookup_field_in_data_dict(
 
     cur_dict[field_to_set.split_field_keys[-1]] = value_to_set
 
+
+def full_dictionary_is_not_definable(data_dict: dict[str, Any]) -> bool:
+    """
+    This method checks if the (nested) dictionary's values are `NOT_DEFINABLE` only.
+
+    :param data_dict: the nested data dictionary that should be checked
+    :return: Ture if all values are `NOT_DEFINABLE`, False otherwise
+    """
+    for _, cur_value in data_dict.items():
+        if cur_value == NOT_DEFINABLE:
+            continue
+        if isinstance(cur_value, dict) and full_dictionary_is_not_definable(cur_value):
+            continue
+        return False
+    return True
