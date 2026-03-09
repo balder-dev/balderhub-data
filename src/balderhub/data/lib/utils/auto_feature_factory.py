@@ -1,7 +1,12 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
-from balderhub.data.lib.scenario_features import AbstractDataItemRelatedFeature
+
 from balderhub.data.lib.utils.single_data_item import SingleDataItem
+
+if TYPE_CHECKING:
+    from balderhub.data.lib.scenario_features.abstract_data_item_related_feature import AbstractDataItemRelatedFeature
 
 
 class AutoFeatureFactory(ABC):
