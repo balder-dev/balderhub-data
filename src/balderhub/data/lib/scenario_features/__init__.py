@@ -1,19 +1,17 @@
 from .abstract_data_item_related_feature import AbstractDataItemRelatedFeature
-from .accessible_multiple_data_config import AccessibleMultipleDataConfig
-from .all_multiple_data_config import AllMultipleDataConfig
+from .accessible_initial_data_config import AccessibleInitialDataConfig
 from .data_environment_feature import DataEnvironmentFeature
 from .example_field_value_provider_feature import ExampleFieldValueProviderFeature
 from .example_data_provider_feature import ExampleDataProviderFeature
-from .multiple_data_config import MultipleDataConfig
+from .initial_data_config import InitialDataConfig
 from .single_data_config import SingleDataConfig
 
 
 __all__ = [
     'AbstractDataItemRelatedFeature',
-    'AccessibleMultipleDataConfig',
-    'AllMultipleDataConfig',
+    'AccessibleInitialDataConfig',
     'ExampleFieldValueProviderFeature',
     'ExampleDataProviderFeature',
-    'MultipleDataConfig',
+    'InitialDataConfig',
     'SingleDataConfig',
 ]
