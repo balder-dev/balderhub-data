@@ -22,8 +22,8 @@ class SingleDataItemCollection:
         raised in case there are more than one matching elements in the list
         """
 
-    def __init__(self, items: List[SingleDataItem]):
-        self._items = items
+    def __init__(self, items: List[SingleDataItem] = None):
+        self._items = items if items is not None else []
 
     def __repr__(self):
         return str(f"{self.__class__.__name__}(items={self._items.__repr__()})")
