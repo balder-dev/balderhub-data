@@ -1,8 +1,8 @@
-from .multiple_data_config import MultipleDataConfig
+from .initial_data_config import InitialDataConfig
 from ..utils.single_data_item_collection import SingleDataItemCollection
 
 
-class AccessibleMultipleDataConfig(MultipleDataConfig):
+class AccessibleMultipleDataConfig(InitialDataConfig):
     """
     Specific scenario feature config that describes the accessible subset of the full available data
     """
