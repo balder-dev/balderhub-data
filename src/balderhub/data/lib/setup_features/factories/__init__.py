@@ -1,5 +1,5 @@
-from .auto_multiple_data_config_setup_factory import AutoMultipleDataConfigSetupFactory
+from .auto_initial_data_config_factory import AutoInitialDataConfigFactory
 
 __all__ = [
-    'AutoMultipleDataConfigSetupFactory'
+    'AutoInitialDataConfigFactory'
 ]
