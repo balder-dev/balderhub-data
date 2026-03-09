@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any, List, Dict, Type
 import balder
 
+from balderhub.data.lib.utils import SingleDataItemCollection
 from balderhub.data.lib.utils.single_data_item import SingleDataItem, SingleDataItemTypeT
 from balderhub.data.lib.utils.exceptions import DuplicateDataObjectError
 
@@ -35,15 +36,15 @@ class DataEnvironmentFeature(balder.Feature):
         overwrite it in subclass to fill the data environment with data.
         """
 
-    def get_all_for(self, data_obj_type: Type[SingleDataItemTypeT]) -> List[SingleDataItemTypeT]:
+    def get_all_for(self, data_obj_type: Type[SingleDataItemTypeT]) -> SingleDataItemCollection:
         """
         This method returns all known data-items for a specific data item type.
         :param data_obj_type: the data-item type
         :return: a list of all known data-items
         """
         if data_obj_type not in self._data.keys():
-            return []
-        return list(self._data[data_obj_type].values())
+            return SingleDataItemCollection([])
+        return SingleDataItemCollection(list(self._data[data_obj_type].values()))
 
     def get(self, data_obj_type: Type[SingleDataItemTypeT], unique_identification: Any) -> SingleDataItemTypeT:
         """
