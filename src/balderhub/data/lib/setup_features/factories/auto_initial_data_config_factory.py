@@ -2,21 +2,20 @@ from typing import Type
 
 from balderhub.data.lib.utils.auto_feature_factory import AutoFeatureFactory
 from balderhub.data.lib.scenario_features import DataEnvironmentFeature
-from balderhub.data.lib.utils import SingleDataItemCollection
 from balderhub.data.lib.utils.single_data_item import SingleDataItem
-from balderhub.data.lib.scenario_features.factories import AutoMultipleDataConfigScenarioFactory
+from balderhub.data.lib import scenario_features
 
 
-class AutoMultipleDataConfigSetupFactory(AutoFeatureFactory):
+class AutoInitialDataConfigFactory(AutoFeatureFactory):
     """
-    Factory for creating data-item bounded scenario-based config-feature :class:`SingleDataConfig` by using the
+    Factory for creating data-item bounded scenario-based config-feature :class:`MultipleDataConfig` by using the
     defined data within a :class:`DataEnvironmentFeature`.
     """
 
     @classmethod
     def _define_class(cls, data_item_cls: Type[SingleDataItem], **kwargs):
 
-        class AutoMultipleDataConfig(AutoMultipleDataConfigScenarioFactory.get_for(data_item_cls)):
+        class AutoMultipleDataConfig(scenario_features.factories.AutoInitialDataConfigFactory.get_for(data_item_cls)):
             """inner factory-created feature class"""
             env = DataEnvironmentFeature()
 
@@ -25,6 +24,6 @@ class AutoMultipleDataConfigSetupFactory(AutoFeatureFactory):
                 """
                 :return: returns the data item collection this config feature describes
                 """
-                return SingleDataItemCollection(self.env.get_all_for(data_item_cls))
+                return self.env.get_all_for(data_item_cls)
 
         return AutoMultipleDataConfig
