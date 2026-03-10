@@ -28,6 +28,9 @@ class ResponseMessageList:
     def __iter__(self):
         return iter(self._responses)
 
+    def __getitem__(self, index):
+        return self._responses[index]
+
     def append(self, elem: ResponseMessage | str) -> None:
         """
         This method adds a Response Message object to the list
