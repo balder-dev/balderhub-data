@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 import pydantic
 from balderhub.unit.scenarios import ScenarioUnit
@@ -367,7 +367,57 @@ class ScenarioUtilsSingleDataItem(ScenarioUnit):
                     return self.name
             assert False, "ValueError expected for default values"
         except ValueError as exc:
-            assert exc.args[0] == "no default values allowed for balderhub-data type definitions", str(exc)
+            assert exc.args[0] == ("no default values (except None for Optional fields) allowed for balderhub-data "
+                                   "type definitions"), str(exc)
+
+    def test_metaclass_allows_default_none_for_optional(self):
+        # Defining a class with Optional field defaulting to None should be allowed
+        class ValidOptionalDataItem(SingleDataItem):
+            name: Optional[str] = None
+
+            def get_unique_identification(self):
+                return self.name if self.name is not None else "none"
+
+        # Should be able to instantiate without errors and value should be None
+        item = ValidOptionalDataItem.create_as_nested()
+        assert item.name is None
+
+    def test_metaclass_allows_default_none_for_union_optional(self):
+        # Defining a class with Union[..., None] defaulting to None should be allowed
+        class ValidUnionOptionalDataItem(SingleDataItem):
+            name: Union[str, None] = None
+
+            def get_unique_identification(self):
+                return self.name if self.name is not None else "none"
+
+        item = ValidUnionOptionalDataItem.create_as_nested()
+        assert item.name is None
+
+    def test_metaclass_disallows_default_none_for_non_optional(self):
+        # Defining a non-Optional field with default None should raise ValueError
+        try:
+            class InvalidNoneDefaultNonOptional(SingleDataItem):
+                name: str = None  # not Optional
+
+                def get_unique_identification(self):
+                    return self.name
+            assert False, "ValueError expected for None default on non-Optional field"
+        except ValueError as exc:
+            assert exc.args[0] == ("default value None is only allowed for Optional fields in balderhub-data type "
+                                   "definitions"), str(exc)
+
+    def test_metaclass_disallows_non_none_default_even_for_optional(self):
+        # Defining an Optional field with non-None default should still be forbidden
+        try:
+            class InvalidNonNoneDefaultOptional(SingleDataItem):
+                name: Optional[str] = "abc"  # non-None default not allowed
+
+                def get_unique_identification(self):
+                    return self.name
+            assert False, "ValueError expected for non-None default on Optional field"
+        except ValueError as exc:
+            assert exc.args[0] == ("no default values (except None for Optional fields) allowed for balderhub-data "
+                                   "type definitions"), str(exc)
 
     def test_metaclass_validates_no_double_underscores(self):
         # Test that defining a class with double underscores in field names raises KeyError
