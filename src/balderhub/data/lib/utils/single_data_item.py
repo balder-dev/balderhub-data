@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import types
+import typing
 from abc import ABC, abstractmethod
 from typing import List, TypeVar, Any, Union, get_args, get_origin, Optional
 
@@ -183,15 +185,11 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
         :param field_lookup: the field lookup string
         :return: the data type the list items should have
         """
-        field_type = cls.get_field_data_type(field_lookup)
-        if field_type is not list:
-            raise TypeError(f'the referenced field `{field_lookup}` is no list (is from type `{field_type}`)')
-        field_info = cls.get_field(field_lookup)
-
-        if get_origin(field_info.annotation) is not list:
-            raise TypeError(f'unsupported type definition `{field_info.annotation}` - expected list type')
+        cleaned_type = cls.get_cleaned_field_data_type(field_lookup)
+        if get_origin(cleaned_type) != list:
+            raise TypeError(f'the referenced field `{field_lookup}` is no list (is from type `{cleaned_type}`)')
         # check inner type
-        inner_args = get_args(field_info.annotation)
+        inner_args = get_args(cleaned_type)
         if len(inner_args) == 1:
             return inner_args[0]
         if len(inner_args) == 0:
@@ -257,11 +255,11 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
         return [str(f) for f in result if f not in abs_except_fields]
 
     @classmethod
-    def get_field_data_type(cls, field_lookup: LookupFieldString | str) -> type:
+    def get_cleaned_field_data_type(cls, field_lookup: LookupFieldString | str) -> type | types.GenericAlias:
         """
         This method returns the specific data type of a field. It automatically resolves subscripted type definitions.
         :param field_lookup: the field lookup string
-        :return: the unsubscripted field type
+        :return: the cleared type spec (can be a normal type, `Optional[type]` or `list[type]`)
         """
 
         def get_data_item_type(field_info: pydantic.fields.FieldInfo) -> type:
@@ -272,38 +270,67 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
                 It can also return a list type!
 
             :param field_info: the pydantic `FieldInfo` object method should be applied too
-            :return: a tuple with the type of the field and a boolean value if this type can be optional or not
             """
             none_type = type(None)
 
+            if field_info.annotation is None:
+                raise TypeError(f'no type is specified for {field_info}')
+
             # now check the type
-            if isinstance(field_info.annotation, type):
+            if isinstance(field_info.annotation, (type, types.GenericAlias)):
                 # references a type
                 return field_info.annotation
 
             # references another type definition
             if get_origin(field_info.annotation) in [list, List]:
-                return list
-
-            if get_origin(field_info.annotation) is Optional:
-                inner_args = get_args(field_info.annotation)
-                # TODO what if there are more than one inner-args??
-                return get_data_item_type(inner_args[0])
+                inner_args = set(get_args(field_info.annotation))
+                if len(inner_args) != 1:
+                    raise TypeError(f'unsupported type {field_info.annotation}')
+                return list[inner_args.pop()]
 
             if get_origin(field_info.annotation) is Union:
                 inner_args = set(get_args(field_info.annotation))
 
                 # make sure that only `None` or `NOT_DEFINABLE` are mentioned within Union arguments
                 cleared_args = set(inner_args) - {none_type, type(NOT_DEFINABLE)}
-
                 if len(cleared_args) != 1:
                     raise TypeError(f'unsupported union type {field_info.annotation}')
+                if none_type in inner_args:
+                    return Optional[cleared_args.pop()]
 
                 return cleared_args.pop()
 
             raise TypeError(f'type definition `{field_info.annotation}` are not possible in balderhub-data dataclasses')
 
         return get_data_item_type(cls.get_field(field_lookup))
+
+    @classmethod
+    def get_field_data_type(cls, field_lookup: LookupFieldString | str) -> type:
+        """
+        This method returns the specific data type of a field. It automatically resolves subscripted type definitions.
+        :param field_lookup: the field lookup string
+        :return: the unsubscripted field type
+        """
+        cleaned_field_type = cls.get_cleaned_field_data_type(field_lookup)
+
+        if isinstance(cleaned_field_type, type) and not isinstance(cleaned_field_type, types.GenericAlias):
+            # references a type
+            return cleaned_field_type
+
+        if get_origin(cleaned_field_type) in [list, List]:
+            return list
+
+        if get_origin(cleaned_field_type) is Optional:
+            return get_args(cleaned_field_type)[0]
+
+        if get_origin(cleaned_field_type) is typing.Union:
+            inner_args = set(get_args(cleaned_field_type))
+            cleaned_inner_args = set(inner_args) - {type(None)}
+            if len(cleaned_inner_args) != 1:
+                raise TypeError(f'get unexpected type definition `{cleaned_field_type}`')
+            return cleaned_inner_args.pop()
+
+        raise TypeError(f'got unexpected type {cleaned_field_type}')
 
     def get_field_value(self, field_lookup: str):
         """
