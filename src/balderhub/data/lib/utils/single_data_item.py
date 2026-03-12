@@ -165,7 +165,9 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
             return True
         # check for usage of `typing.Union[xx, None]`
         if get_origin(field_info.annotation) is Union:
-            inner_args = get_args(field_info.annotation)
+            inner_args = set(get_args(field_info.annotation))
+            if type(NOT_DEFINABLE) in inner_args:
+                inner_args.remove(type(NOT_DEFINABLE))
             if len(inner_args) == 2 and none_type in inner_args:
                 return True
         if consider_upper_optionals_too and len(field_lookup.split_field_keys) > 1:
