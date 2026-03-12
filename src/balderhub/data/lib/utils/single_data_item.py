@@ -33,7 +33,24 @@ class SingleDataItemMetaclass(type(pydantic.BaseModel)):
             mcs._validate_element(cur_field_annotation)
             if field_name in namespace:
                 # field has a default value
-                raise ValueError("no default values allowed for balderhub-data type definitions")
+                default_value = namespace[field_name]
+                if default_value is None:
+                    # allow default None only if the field is Optional
+                    none_type = type(None)
+                    origin = get_origin(cur_field_annotation)
+                    args = list(get_args(cur_field_annotation))
+                    is_optional = (
+                        origin is Optional or
+                        (origin is Union and none_type in args)
+                    )
+                    if not is_optional:
+                        raise ValueError(
+                            "default value None is only allowed for Optional fields in balderhub-data type definitions"
+                        )
+                    # allowed - keep default None
+                else:
+                    raise ValueError("no default values (except None for Optional fields) allowed for balderhub-data "
+                                     "type definitions")
 
             if '__' in field_name:
                 raise KeyError('no double underscores are allowed in field names')
