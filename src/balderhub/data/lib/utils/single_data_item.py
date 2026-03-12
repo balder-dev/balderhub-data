@@ -214,12 +214,15 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
         :return: a list of fields as strings in lookup syntax (concat with `__`)
         """
         except_fields = [] if except_fields is None else except_fields
+
         # make except-fields absolute
-        abs_except_fields = [LookupFieldString(subkey).add_sub_field(f) for f in except_fields]
-
-        subkey = LookupFieldString(subkey) if subkey is not None else subkey
-
-        data_item_type = cls if subkey is None else cls.get_field_data_type(subkey)
+        if subkey is not None:
+            subkey = LookupFieldString(subkey)
+            abs_except_fields = [subkey.add_sub_field(f) for f in except_fields]
+            data_item_type = cls.get_field_data_type(subkey)
+        else:
+            abs_except_fields = [LookupFieldString(f) for f in except_fields]
+            data_item_type = cls
 
         rel_field_list = []
 
