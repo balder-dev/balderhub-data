@@ -31,6 +31,9 @@ class ResponseMessageList:
     def __getitem__(self, index):
         return self._responses[index]
 
+    def __eq__(self, other):
+        return list(self) == list(other)
+
     def append(self, elem: ResponseMessage | str) -> None:
         """
         This method adds a Response Message object to the list
