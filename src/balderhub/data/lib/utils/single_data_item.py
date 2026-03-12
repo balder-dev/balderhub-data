@@ -479,6 +479,11 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
                                                           :meth:`SingleDataItem.get_unique_identification`) separately
         :return: A list with detected error messages
         """
+        fully_flatted_ignore_fields = []
+        #: flatten the ignore field (add all absolute flatten fields if the given ignore-field is nested)
+        if ignore_field_lookups:
+            for cur_ignore_field in ignore_field_lookups:
+                fully_flatted_ignore_fields.extend(self.__class__.get_all_fields_for(cur_ignore_field))
 
         if allow_non_definable and (self.all_fields_are_not_definable() or other == NOT_DEFINABLE):
             return []
@@ -509,7 +514,7 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
                                   f"self: `{self_unique_id}` | other: `{other_unique_id}`")
 
         for cur_field_name in self.__class__.get_all_fields_for(subkey=None, nested=True):
-            if ignore_field_lookups and cur_field_name in ignore_field_lookups:
+            if cur_field_name in fully_flatted_ignore_fields:
                 #logger.warning(f'field `{cur_field.name}` will not be validated because it is on ignore list')
                 continue
             self_value = self.get_field_value(cur_field_name)
