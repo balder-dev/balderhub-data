@@ -40,6 +40,9 @@ class SingleDataItemCollection:
     def __getitem__(self, index):
         return self._items[index]
 
+    def __eq__(self, other):
+        return self.compare(other, ignore_order=False, ignore_field_lookups=None, allow_non_definable=False)
+
     def filter(self, filter_obj: Filter | None) -> SingleDataItemCollection:
         """
         This method applies a filter to all items in the collection
