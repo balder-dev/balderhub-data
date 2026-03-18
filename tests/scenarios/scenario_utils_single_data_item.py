@@ -327,7 +327,7 @@ class ScenarioUtilsSingleDataItem(ScenarioUnit):
         errors = item1.get_difference_error_messages(item2)
         assert len(errors) == 2, errors
         assert "detect different unique identification key - self: `test_42` | other: `test_99`" in errors
-        assert "detect different value for dataclass field `value` - self: `42` | other: `99`" in errors
+        assert "value: detect different value - self: `42` | other: `99`" in errors
 
     def test_get_difference_error_messages_different_unique_id(self):
         item1 = SimpleDataItem.create_as_nested(name="test", value=42)
@@ -335,7 +335,7 @@ class ScenarioUtilsSingleDataItem(ScenarioUnit):
         errors = item1.get_difference_error_messages(item2, validate_unique_identification_separately=True)
         assert len(errors) == 2, errors
         assert 'detect different unique identification key - self: `test_42` | other: `other_42`' in errors
-        assert 'detect different value for dataclass field `name` - self: `test` | other: `other`' in errors
+        assert 'name: detect different value - self: `test` | other: `other`' in errors
 
     def test_get_difference_error_messages_skip_unique_id_validation(self):
         item1 = SimpleDataItem.create_as_nested(name="test", value=42)
@@ -343,7 +343,7 @@ class ScenarioUtilsSingleDataItem(ScenarioUnit):
         errors = item1.get_difference_error_messages(item2, validate_unique_identification_separately=False)
         # Should still have error for 'name' field difference
         assert len(errors) == 1, errors
-        assert errors[0] == "detect different value for dataclass field `name` - self: `test` | other: `other`", errors[0]
+        assert errors[0] == "name: detect different value - self: `test` | other: `other`", errors[0]
 
     def test_get_difference_error_messages_with_ignore_fields(self):
         item1 = SimpleDataItem.create_as_nested(name="test", value=42)
