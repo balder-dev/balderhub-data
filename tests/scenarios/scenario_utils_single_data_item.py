@@ -44,6 +44,14 @@ class ListDataItem(SingleDataItem):
         return len(self.items)
 
 
+class OptionalNestedSingleRef(SingleDataItem):
+    name: str
+    optional_single_data_item: Optional[SimpleDataItem] = None
+
+    def get_unique_identification(self):
+        return self.name
+
+
 class ScenarioUtilsSingleDataItem(ScenarioUnit):
     """Unittests for SingleDataItem class."""
 
@@ -356,6 +364,21 @@ class ScenarioUtilsSingleDataItem(ScenarioUnit):
         item = SimpleDataItem.create_as_nested(name="test", value=42)
         unique_id = item.get_unique_identification()
         assert unique_id == "test_42", unique_id
+
+    def test_get_difference_error_messages_optional_nested_mismatch(self):
+        # One side has optional nested SingleDataItem = None, other has an object
+        item_none = OptionalNestedSingleRef.create_as_nested(name="n1")
+        item_obj = OptionalNestedSingleRef.create_as_nested(
+            name="n1", optional_single_data_item__name="inner", optional_single_data_item__value=1
+        )
+
+        errors = item_none.get_difference_error_messages(item_obj)
+        assert len(errors) == 1, errors
+        # Only check the stable prefix, values may vary in string form
+        assert errors[0] == ("optional_single_data_item: optional key has one element set and the other is not set "
+                             "- self=None | other=name='inner' value=1"), errors[0]
+        # compare() should be False in this situation
+        assert item_none.compare(item_obj) is False
 
     def test_metaclass_validates_no_default_values(self):
         # Test that defining a class with default values raises ValueError
