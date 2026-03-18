@@ -13,20 +13,21 @@ from .functions import convert_field_lookups_to_dict_structure
 from .lookup_field_string import LookupFieldString
 from .not_definable import NOT_DEFINABLE
 
-
 logger = logging.getLogger(__name__)
+
 
 class SingleDataItemMetaclass(type(pydantic.BaseModel)):
     """metaclass for data item"""
+
     def __new__(
-        mcs,
-        cls_name: str,
-        bases: tuple[type[Any], ...],
-        namespace: dict[str, Any],
-        __pydantic_generic_metadata__: pydantic.PydanticGenericMetadata = None,
-        __pydantic_reset_parent_namespace__: bool = True,
-        _create_model_module: str | None = None,
-        **kwargs: Any,
+            mcs,
+            cls_name: str,
+            bases: tuple[type[Any], ...],
+            namespace: dict[str, Any],
+            __pydantic_generic_metadata__: pydantic.PydanticGenericMetadata = None,
+            __pydantic_reset_parent_namespace__: bool = True,
+            _create_model_module: str | None = None,
+            **kwargs: Any,
     ):
         # go though annotations
         for field_name, cur_field_annotation in namespace.get('__annotations__', {}).items():
@@ -40,8 +41,8 @@ class SingleDataItemMetaclass(type(pydantic.BaseModel)):
                     origin = get_origin(cur_field_annotation)
                     args = list(get_args(cur_field_annotation))
                     is_optional = (
-                        origin is Optional or
-                        (origin is Union and none_type in args)
+                            origin is Optional or
+                            (origin is Union and none_type in args)
                     )
                     if not is_optional:
                         raise ValueError(
@@ -75,13 +76,13 @@ class SingleDataItemMetaclass(type(pydantic.BaseModel)):
             inner_args = get_args(type_def)
             if len(inner_args) != 1:
                 raise MisconfiguredDataItemError('list type definition can only have one argument for '
-                                                  'balderhub-data dataclasses')
+                                                 'balderhub-data dataclasses')
             mcs._validate_element(inner_args[0])
         elif get_origin(type_def) is Optional:
             inner_args = get_args(type_def)
             if len(inner_args) != 1:
                 raise MisconfiguredDataItemError('Option type definition can only have one argument for '
-                                                  'balderhub-data dataclasses')
+                                                 'balderhub-data dataclasses')
             mcs._validate_element(inner_args[0], allow_nesting=False)
         elif get_origin(type_def) is Union:
             inner_args = list(get_args(type_def))
@@ -93,10 +94,10 @@ class SingleDataItemMetaclass(type(pydantic.BaseModel)):
                 mcs._validate_element(inner_args[0], allow_nesting=False)
             else:
                 raise MisconfiguredDataItemError('Union type definition with multiple inner arguments '
-                                                  '(except None) is not allowed in balderhub-data dataclasses')
+                                                 '(except None) is not allowed in balderhub-data dataclasses')
         else:
             raise MisconfiguredDataItemError(f'type definition `{type_def}` are not possible in balderhub-data '
-                                              f'dataclasses')
+                                             f'dataclasses')
 
 
 class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass):
@@ -154,7 +155,6 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
         field_info = cls.__pydantic_fields__.get(first_field_part)
         if field_info is None:
             raise KeyError(f'can not find a field `{first_field_part}` in data item `{cls.__name__}`')
-
 
         if len(split_field_str) > 0:
             # go deeper
@@ -217,8 +217,8 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
     def get_all_fields_for(
             cls,
             subkey: str | LookupFieldString | None = None,
-            nested = True,
-            except_fields: list[str | LookupFieldString]=None
+            nested=True,
+            except_fields: list[str | LookupFieldString] = None
     ) -> list[str]:
         """
         This method returns a list with all field names, that matches the requested filter.
@@ -422,7 +422,7 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
     def all_field_lookups_are_within(
             cls,
             field_lookup: str | LookupFieldString,
-            within_list_of_lookups: list[str|LookupFieldString]
+            within_list_of_lookups: list[str | LookupFieldString]
     ) -> bool:
         """
         Helper method that returns True if the provided single-data-item field is within the provided lookup
@@ -477,11 +477,11 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
             validate_unique_identification_separately=validate_unique_identification_separately)
         return len(error_msgs) == 0
 
-    # pylint: disable-next=too-many-locals,too-many-branches
+    # pylint: disable-next=too-many-locals,too-many-branches,too-many-statements
     def get_difference_error_messages(
             self,
             other: SingleDataItemTypeT,
-            ignore_field_lookups: List[str] | None = None,
+            ignore_field_lookups: List[LookupFieldString | str] | None = None,
             allow_non_definable: bool = False,
             validate_unique_identification_separately=True
     ) -> List[str]:
@@ -501,6 +501,8 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
         if ignore_field_lookups:
             for cur_ignore_field in ignore_field_lookups:
                 fully_flatted_ignore_fields.extend(self.__class__.get_all_fields_for(cur_ignore_field))
+        else:
+            ignore_field_lookups = []
 
         if allow_non_definable and (self.all_fields_are_not_definable() or other == NOT_DEFINABLE):
             return []
@@ -530,17 +532,28 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
                 error_list.append(f"detect different unique identification key - "
                                   f"self: `{self_unique_id}` | other: `{other_unique_id}`")
 
-        for cur_field_name in self.__class__.get_all_fields_for(subkey=None, nested=True):
-            if cur_field_name in fully_flatted_ignore_fields:
-                #logger.warning(f'field `{cur_field.name}` will not be validated because it is on ignore list')
+        for cur_field_name in self.__class__.get_all_fields_for(subkey=None, nested=False):
+            ignore_fields = [LookupFieldString(e) for e in fully_flatted_ignore_fields + ignore_field_lookups]
+
+            if cur_field_name in ignore_fields:
+                # ignore this field
                 continue
+
             self_value = self.get_field_value(cur_field_name)
             other_value = other.get_field_value(cur_field_name)
+
+            field_data_type = self.get_field_data_type(cur_field_name)
+            field_is_optional = self.is_optional_field(cur_field_name)
 
             if not needs_to_be_checked(self_value, other_value):
                 continue
 
-            if self.get_field_data_type(cur_field_name) is list:
+            if not allow_non_definable and ((self_value == NOT_DEFINABLE) ^ (other_value == NOT_DEFINABLE)):  # ^ => XOR
+                error_list.append(f"{cur_field_name}: detect different value (allow_non_definable=False) "
+                                  f"- self={self_value} | other={other_value}")
+                continue
+
+            if field_data_type is list:
                 if allow_non_definable and self_value == NOT_DEFINABLE or other_value is NOT_DEFINABLE:
                     # ignore
                     continue
@@ -548,34 +561,54 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
 
                 # make sure that both lists have the same length
                 if len(self_value) != len(other_value):
-                    error_list.append(f"detect different list length for dataclass field `{cur_field_name}`: "
+                    error_list.append(f"{cur_field_name}: detect different list length - "
                                       f"self={len(self_value)}, other={len(other_value)}")
                 else:
+                    idx = 0
                     # both lists have the same length -> start comparing items
                     for cur_self_item, cur_other_item in zip(self_value, other_value):
                         if not needs_to_be_checked(cur_self_item, cur_other_item):
                             continue
-                        if not allow_non_definable and cur_self_item == NOT_DEFINABLE:
-                            error_list.append(f'detect not allowed NON_DEFINABLE value in list item '
-                                              f'`{cur_field_name}`: self={self_value} | other={other_value}')
-                            continue
+                        if NOT_DEFINABLE in [cur_self_item, cur_other_item]:
+                            raise ValueError(f"{cur_field_name}: detect not allowed NON_DEFINABLE - "
+                                             f" self={self_value} | other={other_value}'")
+
                         # a sub SingleDataItem was expected and make sure that it is one
                         if issubclass(inner_type, SingleDataItem) and isinstance(cur_self_item, SingleDataItem):
                             error_list.extend(cur_self_item.get_difference_error_messages(cur_other_item))
                             continue
                         # normal item -> compare values
-                        one_is_not_def = cur_self_item == NOT_DEFINABLE or cur_other_item is NOT_DEFINABLE
-                        if allow_non_definable and one_is_not_def:
-                            # okay
-                            continue
                         if cur_self_item != cur_other_item:
                             error_list.append(
-                                f"detect different value for dataclass field `{cur_field_name}` - "
-                                f"self: `{self_value}` | other: `{other_value}`")
+                                f"{cur_field_name}[{idx}]: detect different value "
+                                f"- self: `{self_value}` | other: `{other_value}`")
+                        idx += 1
+            elif issubclass(field_data_type, SingleDataItem):
+                if field_is_optional:
+                    if self_value is None and other_value is None:
+                        continue
+                    if self_value is None or other_value is None:
+                        error_list.append(f"{cur_field_name}: optional key has one element set and the other is not "
+                                          f"set - self={self_value} | other={other_value}")
+                        continue
+                    # otherwise we have bot elements -> compare both single-data-items with each other
+
+                ignore_fields_for_subitem = [
+                    LookupFieldString(*e.split_field_keys[1:])
+                    for e in ignore_fields if e.split_field_keys[0] == cur_field_name and len(e.split_field_keys) > 1
+                ]
+                sub_error_msgs = self_value.get_difference_error_messages(
+                    other=other_value,
+                    ignore_field_lookups=ignore_fields_for_subitem,
+                    allow_non_definable=allow_non_definable,
+                    validate_unique_identification_separately=False
+                )
+                error_list.extend([f"{cur_field_name}__{msg}" for msg in sub_error_msgs])
             elif self_value != other_value:
-                error_list.append(f"detect different value for dataclass field `{cur_field_name}` - "
+                error_list.append(f"{cur_field_name}: detect different value - "
                                   f"self: `{self_value}` | other: `{other_value}`")
 
         return error_list
+
 
 SingleDataItemTypeT = TypeVar("SingleDataItemTypeT", bound=SingleDataItem)

@@ -305,8 +305,8 @@ class ScenarioUtilsSingleDataItemCollection(ScenarioUnit):
         errors = collection1.get_difference_error_messages(collection2)
         assert len(errors) == 3, errors
         assert errors[0] == "detect different unique identification key - self: `test1_1` | other: `test2_2`", errors
-        assert errors[1] == "detect different value for dataclass field `name` - self: `test1` | other: `test2`", errors
-        assert errors[2] == "detect different value for dataclass field `value` - self: `1` | other: `2`", errors
+        assert errors[1] == "name: detect different value - self: `test1` | other: `test2`", errors
+        assert errors[2] == "value: detect different value - self: `1` | other: `2`", errors
 
     def test_get_difference_error_messages_ignore_order(self):
         item1 = SimpleItem.create_as_nested(name="test1", value=1)
@@ -324,11 +324,11 @@ class ScenarioUtilsSingleDataItemCollection(ScenarioUnit):
         errors = collection1.get_difference_error_messages(collection2, ignore_order=False)
         assert len(errors) == 6, errors
         assert errors[0] == "detect different unique identification key - self: `test1_1` | other: `test2_2`", errors
-        assert errors[1] == "detect different value for dataclass field `name` - self: `test1` | other: `test2`", errors
-        assert errors[2] == "detect different value for dataclass field `value` - self: `1` | other: `2`", errors
+        assert errors[1] == "name: detect different value - self: `test1` | other: `test2`", errors
+        assert errors[2] == "value: detect different value - self: `1` | other: `2`", errors
         assert errors[3] == "detect different unique identification key - self: `test2_2` | other: `test1_1`", errors
-        assert errors[4] == "detect different value for dataclass field `name` - self: `test2` | other: `test1`", errors
-        assert errors[5] == "detect different value for dataclass field `value` - self: `2` | other: `1`", errors
+        assert errors[4] == "name: detect different value - self: `test2` | other: `test1`", errors
+        assert errors[5] == "value: detect different value - self: `2` | other: `1`", errors
 
     def test_get_difference_error_messages_ignore_field_lookups(self):
         item1 = SimpleItem.create_as_nested(name="test1", value=1)
