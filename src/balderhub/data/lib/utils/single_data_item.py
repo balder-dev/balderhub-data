@@ -125,7 +125,7 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
         :param kwargs: the field lookups with its value
         :return: the instantiated data item
         """
-        json_dict = convert_field_lookups_to_dict_structure(kwargs, nested=False)
+        json_dict = convert_field_lookups_to_dict_structure(kwargs, nested=True)
         return cls(**json_dict)
 
     @classmethod
