@@ -548,10 +548,15 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
             if not needs_to_be_checked(self_value, other_value):
                 continue
 
-            if not allow_non_definable and ((self_value == NOT_DEFINABLE) ^ (other_value == NOT_DEFINABLE)):  # ^ => XOR
-                error_list.append(f"{cur_field_name}: detect different value (allow_non_definable=False) "
-                                  f"- self={self_value} | other={other_value}")
-                continue
+            if not allow_non_definable:
+                # NON_DEFINABLE are not allowed -> if it is one-sided -> add error
+                if (self_value == NOT_DEFINABLE) ^ (other_value == NOT_DEFINABLE):  # ^ => XOR
+                    error_list.append(f"{cur_field_name}: detect different value (allow_non_definable=False) "
+                                      f"- self={self_value} | other={other_value}")
+                    continue
+                # NON_DEFINABLE are not allowed -> but if it is on both sides, we can ignore this field
+                if self_value == NOT_DEFINABLE and other_value == NOT_DEFINABLE:
+                    continue
 
             if field_data_type is list:
                 if allow_non_definable and self_value == NOT_DEFINABLE or other_value == NOT_DEFINABLE:
