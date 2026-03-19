@@ -554,7 +554,7 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
                 continue
 
             if field_data_type is list:
-                if allow_non_definable and self_value == NOT_DEFINABLE or other_value is NOT_DEFINABLE:
+                if allow_non_definable and self_value == NOT_DEFINABLE or other_value == NOT_DEFINABLE:
                     # ignore
                     continue
                 inner_type = self.get_element_type_for_list(cur_field_name)
