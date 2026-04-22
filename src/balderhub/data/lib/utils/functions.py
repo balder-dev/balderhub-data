@@ -11,6 +11,7 @@ def convert_field_lookups_to_dict_structure(dictionary: Union[dict, list], neste
     Example:
 
     .. code-block:: python
+
         >>> convert_field_lookups_to_dict_structure({'a__d': 3.2, 'a__b__c': 2, 'a__b__d': 3, 'a__c': 'H', 'b': 3})
         {'a': {'d': 3.2, 'b': {'c': 2, 'd': 3}, 'c': 'H'}, 'b': 3}
 
@@ -57,6 +58,7 @@ def convert_dict_structure_to_field_lookups(dictionary: Union[dict, list]) -> Un
     This method converts the nested dictionary structure to a flat dictionary by using lookup-fields as key:
 
     .. code-block:: python
+
         >>> convert_dict_structure_to_field_lookups({'a': {'d': 3.2, 'b': {'c': 2, 'd': 3}, 'c': 'H'}, 'b': 3})
         {'a__d': 3.2, 'a__b__c': 2, 'a__b__d': 3, 'a__c': 'H', 'b': 3}
 
@@ -87,6 +89,7 @@ def set_lookup_field_in_data_dict(
 ) -> None:
     """
     Helper function to set a lookup-field within a nested dictionary structure
+
     :param data_dict: the nested data dictionary the value should be set
     :param field_to_set: the field lookup
     :param value_to_set: the value that should be set
