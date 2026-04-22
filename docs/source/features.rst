@@ -8,12 +8,26 @@ This section describes all features that are shipped with this package.
 Scenario Features
 =================
 
-.. note::
-    This package does not provide any scenario features
+.. autoclass:: balderhub.data.lib.scenario_features.AbstractDataItemRelatedFeature
+    :members:
 
-.. todo add your features with .. autoclass
-    .. autoclass:: balderhub.data.lib.scenario_features.MyScenarioFeature
-        :members:
+.. autoclass:: balderhub.data.lib.scenario_features.AccessibleInitialDataConfig
+    :members:
+
+.. autoclass:: balderhub.data.lib.scenario_features.DataEnvironmentFeature
+    :members:
+
+.. autoclass:: balderhub.data.lib.scenario_features.InitialDataConfig
+    :members:
+
+Scenario Factories
+==================
+
+.. autoclass:: balderhub.data.lib.scenario_features.factories.AutoAccessibleInitialDataConfigFactory
+    :members:
+
+.. autoclass:: balderhub.data.lib.scenario_features.factories.AutoInitialDataConfigFactory
+    :members:
 
 
 Setup Features
@@ -22,6 +36,12 @@ Setup Features
 .. note::
     This package does not provide any setup features.
 
-.. todo add your features with .. autoclass
-    .. autoclass:: balderhub.data.lib.setup_features.MySetupFeature
-        :members:
+
+Setup Factories
+===============
+
+.. autoclass:: balderhub.data.lib.setup_features.factories.AutoAccessibleInitialDataConfigFactory
+    :members:
+
+.. autoclass:: balderhub.data.lib.setup_features.factories.AutoInitialDataConfigFactory
+    :members:
