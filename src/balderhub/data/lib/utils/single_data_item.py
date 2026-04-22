@@ -463,13 +463,13 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
     ) -> bool:
         """
         This method compares a data item with another data item from same type.
+
         :param other: the other data item to compare with
         :param ignore_field_lookups: a list with field lookups that should be ignored
         :param allow_non_definable: True if the method should ignore fields for which one data item has the value
                                     `NOT_DEFINABLE`
         :param validate_unique_identification_separately: True if the method should validate the unique-identification
-                                                          value (provided with
-                                                          :meth:`SingleDataItem.get_unique_identification`) separately
+          value (provided with :meth:`balderhub.data.lib.utils.SingleDataItem.get_unique_identification`) separately
         :return: True if the data of both data item objects are equal
         """
         error_msgs = self.get_difference_error_messages(
