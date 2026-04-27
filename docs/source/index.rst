@@ -40,6 +40,7 @@ This documentation is organised around the core pieces you will use every day:
    features.rst
    examples.rst
    utilities.rst
+   contrib.rst
 
 Quick start
 -----------
