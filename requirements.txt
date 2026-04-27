@@ -6,4 +6,5 @@ setuptools~=78.1.1
 pycryptodome>=3.17
 pylint~=3.3.9
 balderhub-unit
+balderhub-auth~=0.0.1b2
 pydantic~=2.12.5
