@@ -11,18 +11,25 @@ class AutoDataParamProviderFactory(AutoFeatureFactory):
     The `AutoDataParamProviderFactory` is responsible for defining and constructing data item parameter
     providers dynamically for use with auto-generated features. It creates data item bounded setup-level features
     of :class:`balderhub.auth.contrib.data.setup_features.DataItemParamProvider`.
-
     """
+
     @classmethod
     def _define_class(cls, data_item_cls: type[SingleDataItem], **kwargs) -> type[AbstractDataItemRelatedFeature]:
         # pylint: disable-next=import-outside-toplevel
         from ..data_item_param_provider import DataItemParamProvider
+
+        resolving_mode = kwargs.pop('resolving_mode') if 'resolving_mode' in kwargs else \
+            DataItemParamProvider.ResolvingMode.ALL
+
+        enforcing_parameters = kwargs.pop('enforcing_parameters') if 'enforcing_parameters' in kwargs else 0
 
         class AutoDataItemParamProvider(DataItemParamProvider):
             """
             auto created data item bounded setup-level feature of
             :class:`balderhub.auth.contrib.data.setup_features.DataItemParamProvider`
             """
+            RESOLVING_MODE = resolving_mode
+            ENFORCING_PARAMETERS = enforcing_parameters
             class Server(DataItemParamProvider.Server):
                 """
                 server vdevice with data-item bounded setup-level feature implementation of
@@ -31,4 +38,4 @@ class AutoDataParamProviderFactory(AutoFeatureFactory):
                 all_data = \
                     balderhub.data.lib.scenario_features.factories.AutoInitialDataConfigFactory.get_for(data_item_cls)()
 
-        return AutoDataItemParamProvider  # TODO
+        return AutoDataItemParamProvider
