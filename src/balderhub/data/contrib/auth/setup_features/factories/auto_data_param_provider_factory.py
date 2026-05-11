@@ -29,6 +29,6 @@ class AutoDataParamProviderFactory(AutoFeatureFactory):
                 :class:`balderhub.data.lib.scenario_features.InitialDataConfig`.
                 """
                 all_data = \
-                    balderhub.data.lib.scenario_features.factories.AutoInitialDataConfigFactory.get_for(data_item_cls)
+                    balderhub.data.lib.scenario_features.factories.AutoInitialDataConfigFactory.get_for(data_item_cls)()
 
         return AutoDataItemParamProvider  # TODO
