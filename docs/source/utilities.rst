@@ -35,6 +35,24 @@ Utilities for Data Items
 
 .. autofunction:: balderhub.data.lib.utils.functions.full_dictionary_is_not_definable
 
+Response Messages
+=================
+
+Response Message Objects
+------------------------
+
+.. autoclass:: balderhub.data.lib.utils.BaseResponseMessage
+    :members:
+
+.. autoclass:: balderhub.data.lib.utils.ResponseMessage
+    :members:
+
+Response Message List
+---------------------
+
+.. autoclass:: balderhub.data.lib.utils.ResponseMessageList
+    :members:
+
 Base Factory
 ============
 
