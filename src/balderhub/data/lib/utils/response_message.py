@@ -1,9 +1,10 @@
 from __future__ import annotations
 import dataclasses
 
+from .base_response_message import BaseResponseMessage
 
 @dataclasses.dataclass
-class ResponseMessage:
+class ResponseMessage(BaseResponseMessage):
     """
     Response message object, that is used for validating responses from data interactions.
     """
@@ -12,7 +13,7 @@ class ResponseMessage:
     body: str = None
 
     def __str__(self):
-        return self.text
+        return f'"{self.text}"'
 
     def __eq__(self, other):
         # TODO allow regular expressions?

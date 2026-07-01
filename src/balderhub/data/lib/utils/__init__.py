@@ -1,4 +1,5 @@
 from .auto_feature_factory import AutoFeatureFactory
+from .base_response_message import BaseResponseMessage
 from .not_definable import NOT_DEFINABLE
 from .lookup_field_string import LookupFieldString
 from .response_message import ResponseMessage
@@ -8,6 +9,7 @@ from .single_data_item_collection import SingleDataItemCollection
 
 __all__ = [
     'NOT_DEFINABLE',
+    'BaseResponseMessage',
     'LookupFieldString',
     'ResponseMessage',
     'ResponseMessageList',
