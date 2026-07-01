@@ -50,11 +50,11 @@ class ScenarioUtilsResponseMessageList(ScenarioUnit):
 
     def test_response_message_list_str_single_item(self):
         msg_list = ResponseMessageList(["Error"])
-        assert str(msg_list) == '["Error"]'
+        assert str(msg_list) == 'ResponseMessageList(["Error"])'
 
     def test_response_message_list_str_multiple_items(self):
         msg_list = ResponseMessageList(["Error 1", "Error 2"])
-        assert str(msg_list) == '["Error 1", "Error 2"]'
+        assert str(msg_list) == 'ResponseMessageList(["Error 1", "Error 2"])'
 
     def test_response_message_list_bool_empty_is_false(self):
         msg_list = ResponseMessageList()
@@ -105,7 +105,7 @@ class ScenarioUtilsResponseMessageList(ScenarioUnit):
             msg_list.append(123)  # type: ignore[arg-type]
             assert False, "TypeError expected for invalid type"
         except TypeError as exc:
-            assert exc.args[0] == "detect unexpected type for parameter `elem`", exc
+            assert exc.args[0] == "detect unexpected type for parameter `elem`: <class 'int'>", exc
 
     def test_response_message_list_append_none_raises_type_error(self):
         msg_list = ResponseMessageList()
@@ -113,7 +113,7 @@ class ScenarioUtilsResponseMessageList(ScenarioUnit):
             msg_list.append(None)  # type: ignore[arg-type]
             assert False, "TypeError expected for None"
         except TypeError as exc:
-            assert exc.args[0] == "detect unexpected type for parameter `elem`", exc
+            assert exc.args[0] == "detect unexpected type for parameter `elem`: <class 'NoneType'>", exc
 
     def test_response_message_list_copy_creates_new_list(self):
         msg_list = ResponseMessageList(["Error 1", "Error 2"])

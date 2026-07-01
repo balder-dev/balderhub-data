@@ -1,13 +1,13 @@
 from __future__ import annotations
-from typing import List
+from .base_response_message import BaseResponseMessage
 from .response_message import ResponseMessage
 
 
 class ResponseMessageList:
     """
-    holds a list of :class:`ResponseMessage` objects
+    holds a list of :class:`BaseResponseMessage` objects
     """
-    def __init__(self, responses: List[ResponseMessage | str] = None):
+    def __init__(self, responses: list[BaseResponseMessage | str] | None = None):
         self._responses = []
         if responses is not None:
             for elem in responses:
@@ -16,8 +16,8 @@ class ResponseMessageList:
     def __str__(self):
         if len(self._responses) == 0:
             return f"{ResponseMessageList.__name__}([])"
-        inner_text = '", "'.join([str(response) for response in self._responses])
-        return f'["{inner_text}"]'
+        inner_text = ', '.join([str(response) for response in self._responses])
+        return f'{ResponseMessageList.__name__}([{inner_text}])'
 
     def __bool__(self):
         return bool(self._responses)
@@ -34,17 +34,17 @@ class ResponseMessageList:
     def __eq__(self, other):
         return list(self) == list(other)
 
-    def append(self, elem: ResponseMessage | str) -> None:
+    def append(self, elem: BaseResponseMessage | str) -> None:
         """
         This method adds a Response Message object to the list
         :param elem: the message that should be added
         """
         if isinstance(elem, str):
             self._responses.append(ResponseMessage(elem))
-        elif isinstance(elem, ResponseMessage):
+        elif isinstance(elem, BaseResponseMessage):
             self._responses.append(elem)
         else:
-            raise TypeError('detect unexpected type for parameter `elem`')
+            raise TypeError(f'detect unexpected type for parameter `elem`: {type(elem)}')
 
     def copy(self):
         """
