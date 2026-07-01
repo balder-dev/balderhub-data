@@ -20,11 +20,11 @@ class ScenarioUtilsResponseMessage(ScenarioUnit):
 
     def test_response_message_str_returns_text(self):
         msg = ResponseMessage(text="Warning message", body="Extra details")
-        assert str(msg) == '"Warning message"'
+        assert str(msg) == 'ResponseMessage<"Warning message">'
 
     def test_response_message_str_with_text_only(self):
         msg = ResponseMessage(text="Info")
-        assert str(msg) == '"Info"'
+        assert str(msg) == 'ResponseMessage<"Info">'
 
     def test_response_message_equality_both_text_and_body_match(self):
         msg1 = ResponseMessage(text="Error", body="Details")
