@@ -49,6 +49,9 @@ class LookupFieldString:
     def __str__(self):
         return '__'.join(self._field_keys)
 
+    def __repr__(self):
+        return f"LookupFieldString('{self._field_keys}')"
+
     def __eq__(self, other):
         if not isinstance(other, (LookupFieldString, str)):
             return False
