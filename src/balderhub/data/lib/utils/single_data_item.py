@@ -77,21 +77,21 @@ class SingleDataItemMetaclass(type(pydantic.BaseModel)):
             if len(inner_args) != 1:
                 raise MisconfiguredDataItemError('list type definition can only have one argument for '
                                                  'balderhub-data dataclasses')
-            mcs._validate_element(inner_args[0])
+            mcs._validate_element(inner_args[0], allow_nesting=False)
         elif get_origin(type_def) is Optional:
             inner_args = get_args(type_def)
             if len(inner_args) != 1:
                 raise MisconfiguredDataItemError('Option type definition can only have one argument for '
                                                  'balderhub-data dataclasses')
-            mcs._validate_element(inner_args[0], allow_nesting=False)
+            mcs._validate_element(inner_args[0], allow_nesting=True)
         elif get_origin(type_def) is Union:
             inner_args = list(get_args(type_def))
             if len(inner_args) == 1:
-                mcs._validate_element(inner_args[0], allow_nesting=False)
+                mcs._validate_element(inner_args[0], allow_nesting=True)
             elif len(inner_args) == 2 and none_type in inner_args:
                 # make sure that `None` is part of it
                 inner_args.remove(none_type)
-                mcs._validate_element(inner_args[0], allow_nesting=False)
+                mcs._validate_element(inner_args[0], allow_nesting=True)
             else:
                 raise MisconfiguredDataItemError('Union type definition with multiple inner arguments '
                                                  '(except None) is not allowed in balderhub-data dataclasses')
@@ -203,8 +203,14 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
         :return: the data type the list items should have
         """
         cleaned_type = cls.get_cleaned_field_data_type(field_lookup)
-        if get_origin(cleaned_type) != list:
+
+        if cls.get_field_data_type(field_lookup) != list:
             raise TypeError(f'the referenced field `{field_lookup}` is no list (is from type `{cleaned_type}`)')
+        if cls.is_optional_field(field_lookup):
+            inner_args = set(get_args(cleaned_type))
+            inner_args = inner_args - {type(None)}
+            cleaned_type = inner_args.pop()
+
         # check inner type
         inner_args = get_args(cleaned_type)
         if len(inner_args) == 1:
@@ -330,24 +336,27 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
         """
         cleaned_field_type = cls.get_cleaned_field_data_type(field_lookup)
 
-        if isinstance(cleaned_field_type, type) and not isinstance(cleaned_field_type, types.GenericAlias):
-            # references a type
-            return cleaned_field_type
+        def get_data_type(_of_element_type) -> type:
+            if isinstance(_of_element_type, type) and not isinstance(_of_element_type, types.GenericAlias):
+                # references a type
+                return _of_element_type
 
-        if get_origin(cleaned_field_type) in [list, List]:
-            return list
+            if get_origin(_of_element_type) in [list, List]:
+                return list
 
-        if get_origin(cleaned_field_type) is Optional:
-            return get_args(cleaned_field_type)[0]
+            if get_origin(_of_element_type) is Optional:
+                return get_data_type(get_args(_of_element_type)[0])
 
-        if get_origin(cleaned_field_type) is typing.Union:
-            inner_args = set(get_args(cleaned_field_type))
-            cleaned_inner_args = set(inner_args) - {type(None)}
-            if len(cleaned_inner_args) != 1:
-                raise TypeError(f'get unexpected type definition `{cleaned_field_type}`')
-            return cleaned_inner_args.pop()
+            if get_origin(_of_element_type) is typing.Union:
+                inner_args = set(get_args(_of_element_type))
+                cleaned_inner_args = set(inner_args) - {type(None)}
+                if len(cleaned_inner_args) != 1:
+                    raise TypeError(f'get unexpected type definition `{_of_element_type}`')
+                return get_data_type(cleaned_inner_args.pop())
 
-        raise TypeError(f'got unexpected type {cleaned_field_type}')
+            raise TypeError(f'got unexpected type {_of_element_type}')
+
+        return get_data_type(cleaned_field_type)
 
     def get_field_value(self, field_lookup: str):
         """
