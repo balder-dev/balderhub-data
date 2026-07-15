@@ -133,6 +133,33 @@ class ScenarioUtilsLookupFieldString(ScenarioUnit):
         assert lookup_dict[lfs1] == "value1"
         assert lookup_dict[LookupFieldString("key1")] == "value1"  # Same key
 
+    def test_startswith_with_string(self):
+        lfs = LookupFieldString("a__b__c")
+        assert lfs.startswith("a")
+        assert lfs.startswith("a__b")
+        assert lfs.startswith("a__b__c")
+
+    def test_startswith_with_lookup_field_string(self):
+        lfs = LookupFieldString("a__b__c")
+        assert lfs.startswith(LookupFieldString("a"))
+        assert lfs.startswith(LookupFieldString("a__b"))
+        assert lfs.startswith(LookupFieldString("a__b__c"))
+
+    def test_startswith_returns_false_for_non_prefix(self):
+        lfs = LookupFieldString("a__b__c")
+        assert not lfs.startswith("b")
+        assert not lfs.startswith("a__c")
+        assert not lfs.startswith(LookupFieldString("b__c"))
+
+    def test_startswith_returns_false_for_longer_value(self):
+        lfs = LookupFieldString("a__b")
+        assert not lfs.startswith("a__b__c")
+
+    def test_startswith_only_matches_complete_field_keys(self):
+        lfs = LookupFieldString("abc__def")
+        # `ab` is a string prefix of `abc`, but not a complete field key
+        assert not lfs.startswith("ab")
+
     def test_complex_nested_field_operations(self):
         # Build up a complex lookup field step by step
         base = LookupFieldString("root")

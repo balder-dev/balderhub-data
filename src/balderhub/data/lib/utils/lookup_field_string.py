@@ -46,6 +46,18 @@ class LookupFieldString:
         field = LookupFieldString(field)
         return self.__class__(*self.split_field_keys, *field.split_field_keys)
 
+    def startswith(self, value: str | LookupFieldString) -> bool:
+        """
+        Check if the string representation of the instance starts with the specified value.
+
+        :param value: The string or LookupFieldString to compare against the start of the instance's
+            string representation.
+        :return: True if the instance's string representation starts with the given lookup parts,
+            otherwise False.
+        """
+        value_parts = LookupFieldString(value).split_field_keys
+        return self.split_field_keys[:len(value_parts)] ==  value_parts
+
     def __str__(self):
         return '__'.join(self._field_keys)
 
