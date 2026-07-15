@@ -160,12 +160,33 @@ class ScenarioUtilsSingleDataItem(ScenarioUnit):
         fields = SimpleDataItem.get_all_fields_for(nested=False, except_fields=["value"])
         assert fields == ["name"]
 
+    def test_get_all_fields_with_nested_except_fields(self):
+
+        fields = ComplexDataItem.get_all_fields_for(nested=False, except_fields=["nested"])
+        assert fields == ["title", "count", "optional_field"], fields
+
+        fields = ComplexDataItem.get_all_fields_for(nested=True, except_fields=["nested"])
+        assert fields == ["title", "count", "optional_field"], fields
+
+        # except fields hold all inner fields of NestedDataItem
+        fields = ComplexDataItem.get_all_fields_for(nested=False, except_fields=["nested__id", "nested__simple"])
+        assert fields == ["title", "count", "optional_field"], fields
+
+        fields = ComplexDataItem.get_all_fields_for(nested=True, except_fields=["nested__id", "nested__simple"])
+        assert fields == ["title", "count", "optional_field"], fields
+
+        # except fields hold all inner fields of NestedDataItem and also all fields of NestedDataItem -> SimpleDataItem
+        fields = ComplexDataItem.get_all_fields_for(
+            nested=False, except_fields=["nested__id", "nested__simple__name", "nested__simple__value"]
+        )
+        assert fields == ["title", "count", "optional_field"], fields
+
     def test_get_all_fields_for_except_fields_missing_raises_key_error(self):
         try:
             SimpleDataItem.get_all_fields_for(nested=False, except_fields=["nonexistent"])
             assert False, "KeyError expected for missing except_field"
         except KeyError as exc:
-            assert exc.args[0] == "can not find except_field `nonexistent` in possible data: ['name', 'value']", exc
+            assert exc.args[0] == "can not find a field `nonexistent` in data item `SimpleDataItem`", exc
 
     def test_get_field_data_type_simple(self):
         field_type = SimpleDataItem.get_field_data_type("name")
