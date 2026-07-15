@@ -160,6 +160,41 @@ class ScenarioUtilsLookupFieldString(ScenarioUnit):
         # `ab` is a string prefix of `abc`, but not a complete field key
         assert not lfs.startswith("ab")
 
+    def test_relative_to_with_string(self):
+        lfs = LookupFieldString("a__b__c")
+        relative = lfs.relative_to("a")
+        assert isinstance(relative, LookupFieldString)
+        assert relative.split_field_keys == ["b", "c"]
+        assert str(relative) == "b__c"
+
+    def test_relative_to_with_lookup_field_string(self):
+        lfs = LookupFieldString("a__b__c")
+        relative = lfs.relative_to(LookupFieldString("a__b"))
+        assert isinstance(relative, LookupFieldString)
+        assert relative.split_field_keys == ["c"]
+        assert str(relative) == "c"
+
+    def test_relative_to_full_match_returns_none(self):
+        lfs = LookupFieldString("a__b__c")
+        assert lfs.relative_to("a__b__c") is None
+
+    def test_relative_to_empty_string_returns_self(self):
+        lfs = LookupFieldString("a__b__c")
+        assert lfs.relative_to("") is lfs
+
+    def test_relative_to_non_prefix_raises_value_error(self):
+        lfs = LookupFieldString("a__b__c")
+        try:
+            lfs.relative_to("x__y")
+            assert False, "ValueError expected for non-prefix value"
+        except ValueError as exc:
+            assert exc.args[0] == "given `x__y` is not part of this `a__b__c`", exc
+
+    def test_relative_to_does_not_modify_original(self):
+        lfs = LookupFieldString("a__b__c")
+        lfs.relative_to("a")
+        assert lfs.split_field_keys == ["a", "b", "c"]
+
     def test_complex_nested_field_operations(self):
         # Build up a complex lookup field step by step
         base = LookupFieldString("root")
