@@ -58,6 +58,25 @@ class LookupFieldString:
         value_parts = LookupFieldString(value).split_field_keys
         return self.split_field_keys[:len(value_parts)] ==  value_parts
 
+    def relative_to(self, value: str | LookupFieldString) -> LookupFieldString | None:
+        """
+        Returns a new `LookupFieldString` object representing the path relative to the provided `value`,
+        or `None` if the provided `value` is an empty string. If the provided `value` is not a part of
+        the current `LookupFieldString`, a `ValueError` is raised.
+
+        :param value: The base `LookupFieldString` or string against which the relative path is calculated.
+        :return: A new `LookupFieldString` object representing the relative path, or `None` if the input
+            `value` is an empty string.
+        :raises ValueError: If `value` is not part of the current `LookupFieldString`.
+        """
+        if value == '':
+            return self
+        if not self.startswith(value):
+            raise ValueError(f'given `{value}` is not part of this `{self}`')
+        start_idx = len(LookupFieldString(value).split_field_keys)
+        relative_field_parts = self.split_field_keys[start_idx:]
+        return LookupFieldString(*relative_field_parts) if relative_field_parts else None
+
     def __str__(self):
         return '__'.join(self._field_keys)
 
