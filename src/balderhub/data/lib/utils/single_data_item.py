@@ -247,6 +247,12 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
             abs_except_fields = [LookupFieldString(f) for f in except_fields]
             data_item_type = cls
 
+        resolved_abs_except_fields = []
+        # validate existence of except fields - and resolve all nested fields to all nested fields
+        for cur_except_field in abs_except_fields:
+            # get all nested fields (and check existence of field here)
+            resolved_abs_except_fields.extend(cls.get_all_fields_for(cur_except_field))
+
         rel_field_list = []
 
         if not issubclass(data_item_type, SingleDataItem):
@@ -257,10 +263,12 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
         for cur_field_name in data_item_type.__pydantic_fields__.keys():
             cur_field_type = data_item_type.get_field_data_type(cur_field_name)
             if nested and issubclass(cur_field_type, SingleDataItem):
-                nested_fields = cur_field_type.get_all_fields_for(subkey=None, nested=True, except_fields=None)
+                nested_fields_of_field = cur_field_type.get_all_fields_for(subkey=None, nested=True, except_fields=None)
 
                 # finally add these fields with the cur_field_name as prefix
-                rel_field_list.extend([LookupFieldString(cur_field_name).add_sub_field(f) for f in nested_fields])
+                rel_field_list.extend(
+                    [LookupFieldString(cur_field_name).add_sub_field(f) for f in nested_fields_of_field]
+                )
             else:
                 rel_field_list.append(cur_field_name)
 
@@ -271,11 +279,19 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
         else:
             result = [str(LookupFieldString(subkey).add_sub_field(rel_field)) for rel_field in rel_field_list]
 
-        # filter all except-fields
-        for cur_except_field in abs_except_fields:
-            if cur_except_field not in result:
-                raise KeyError(f'can not find except_field `{cur_except_field}` in possible data: {result}')
-        return [str(f) for f in result if f not in abs_except_fields]
+        # go trough all new fields and check if every key is mentioned in except-fields
+
+        filtered_result = []
+        for field in result:
+
+            for nested_field in cls.get_all_fields_for(field, nested=True):
+                if nested_field not in resolved_abs_except_fields:
+                    # at least one part of this field is not mentioned in except-fields -> add it to results
+                    filtered_result.append(field)
+                    break
+
+        # filter all direct mentioned except-fields
+        return [str(f) for f in filtered_result]
 
     @classmethod
     def get_cleaned_field_data_type(cls, field_lookup: LookupFieldString | str) -> type | types.GenericAlias:
