@@ -6,7 +6,6 @@ from .response_message import ResponseMessage
 from .response_message_list import ResponseMessageList
 from .single_data_item import SingleDataItem
 from .single_data_item_collection import SingleDataItemCollection
-from .unordered_list import UnorderedList
 
 __all__ = [
     'NOT_DEFINABLE',
@@ -15,6 +14,5 @@ __all__ = [
     'ResponseMessage',
     'ResponseMessageList',
     'SingleDataItem',
-    'SingleDataItemCollection',
-    'UnorderedList'
+    'SingleDataItemCollection'
 ]
