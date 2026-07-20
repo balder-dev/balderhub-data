@@ -73,7 +73,7 @@ class SingleDataItemMetaclass(type(pydantic.BaseModel)):
         if not allow_nesting:
             raise MisconfiguredDataItemError('nesting typing is only allowed for list')
         # references another type definition
-        if get_origin(type_def) in [list, List, UnorderedList]:
+        if get_origin(type_def) in [list, List]:
             inner_args = get_args(type_def)
             if len(inner_args) != 1:
                 raise MisconfiguredDataItemError('list type definition can only have one argument for '
