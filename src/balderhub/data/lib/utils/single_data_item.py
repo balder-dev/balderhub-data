@@ -12,7 +12,6 @@ from .exceptions import MisconfiguredDataItemError
 from .functions import convert_field_lookups_to_dict_structure
 from .lookup_field_string import LookupFieldString
 from .not_definable import NOT_DEFINABLE
-from .unordered_list import UnorderedList
 
 logger = logging.getLogger(__name__)
 
@@ -205,7 +204,7 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
         """
         cleaned_type = cls.get_cleaned_field_data_type(field_lookup)
 
-        if cls.get_field_data_type(field_lookup) not in [list, UnorderedList]:
+        if cls.get_field_data_type(field_lookup) != list:
             raise TypeError(f'the referenced field `{field_lookup}` is no list (is from type `{cleaned_type}`)')
         if cls.is_optional_field(field_lookup):
             inner_args = set(get_args(cleaned_type))
@@ -360,9 +359,6 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
 
             if get_origin(_of_element_type) in [list, List]:
                 return list
-
-            if get_origin(_of_element_type) in [UnorderedList]:
-                return UnorderedList
 
             if get_origin(_of_element_type) is Optional:
                 return get_data_type(get_args(_of_element_type)[0])
@@ -595,7 +591,7 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
                                       f"set - self={self_value} | other={other_value}")
                     continue
 
-            if field_data_type in [list, UnorderedList]:
+            if field_data_type is list:
                 if allow_non_definable and self_value == NOT_DEFINABLE or other_value == NOT_DEFINABLE:
                     # ignore
                     continue
@@ -607,17 +603,6 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
                                       f"self={len(self_value)}, other={len(other_value)}")
                 else:
                     idx = 0
-
-                    # TODO improve this implementation
-                    if field_data_type is UnorderedList:
-
-                        sorted_kwargs = {}
-                        if issubclass(inner_type, SingleDataItem):
-                            sorted_kwargs['key'] = lambda x: x.get_unique_identification()
-
-                        self_value = sorted(self_value, **sorted_kwargs)
-                        other_value = sorted(other_value, **sorted_kwargs)
-
                     # both lists have the same length -> start comparing items
                     for cur_self_item, cur_other_item in zip(self_value, other_value):
                         if not needs_to_be_checked(cur_self_item, cur_other_item):
