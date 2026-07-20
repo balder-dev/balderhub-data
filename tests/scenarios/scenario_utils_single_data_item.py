@@ -222,6 +222,23 @@ class ScenarioUtilsSingleDataItem(ScenarioUnit):
         item = SimpleDataItem.create_non_definable(nested=True)
         assert item.get_field_value("name") == NOT_DEFINABLE
 
+    def test_compare_list_with_non_definable_elems(self):
+        item = ListDataItem(items=[], nested_items=[
+            SimpleDataItem(name="test", value=42),
+            SimpleDataItem(name="test", value=99),
+        ])
+        item2 = ListDataItem(items=[], nested_items=[
+            SimpleDataItem(name="test", value=NOT_DEFINABLE),
+            SimpleDataItem(name="test", value=99),
+        ])
+
+        compare_error_msgs = item.get_difference_error_messages(
+            item2,
+            allow_non_definable=True,
+            validate_unique_identification_separately=False
+        )
+        assert compare_error_msgs == [], compare_error_msgs
+
     def test_get_field_value_missing_raises_key_error(self):
         item = SimpleDataItem.create_as_nested(name="test", value=42)
         try:
