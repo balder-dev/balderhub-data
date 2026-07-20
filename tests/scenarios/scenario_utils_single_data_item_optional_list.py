@@ -57,3 +57,14 @@ class ScenarioUtilsSingleDataItemOptionalList(ScenarioUnit):
         assert item.name == "test"
         assert item.optional_single_data_item is None
         assert item.optional_list_of_single_data_items == list_to_create
+
+
+    def test_compare_while_one_optional(self):
+        item = OptionalNestedSingleRef(name="test", optional_list_of_single_data_items=[
+            SimpleDataItem(name='test', value=1),
+            SimpleDataItem(name='test2', value=2),
+        ])
+        item2 = OptionalNestedSingleRef(name="test", optional_list_of_single_data_items=None)
+        assert item.get_difference_error_messages(item2) == [
+            "optional_list_of_single_data_items: optional key has one element set and the other is not set - self=[SimpleDataItem(name='test', value=1), SimpleDataItem(name='test2', value=2)] | other=None"
+        ], item.get_difference_error_messages(item2)

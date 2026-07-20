@@ -583,6 +583,14 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
                 if self_value == NOT_DEFINABLE and other_value == NOT_DEFINABLE:
                     continue
 
+            if field_is_optional:
+                if self_value is None and other_value is None:
+                    continue
+                if self_value is None or other_value is None:
+                    error_list.append(f"{cur_field_name}: optional key has one element set and the other is not "
+                                      f"set - self={self_value} | other={other_value}")
+                    continue
+
             if field_data_type is list:
                 if allow_non_definable and self_value == NOT_DEFINABLE or other_value == NOT_DEFINABLE:
                     # ignore
@@ -614,14 +622,7 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
                                 f"- self: `{self_value}` | other: `{other_value}`")
                         idx += 1
             elif issubclass(field_data_type, SingleDataItem):
-                if field_is_optional:
-                    if self_value is None and other_value is None:
-                        continue
-                    if self_value is None or other_value is None:
-                        error_list.append(f"{cur_field_name}: optional key has one element set and the other is not "
-                                          f"set - self={self_value} | other={other_value}")
-                        continue
-                    # otherwise we have bot elements -> compare both single-data-items with each other
+                # we have both elements -> compare both single-data-items with each other
 
                 ignore_fields_for_subitem = [
                     LookupFieldString(*e.split_field_keys[1:])
