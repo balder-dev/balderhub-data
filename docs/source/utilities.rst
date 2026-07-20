@@ -35,6 +35,12 @@ Utilities for Data Items
 
 .. autofunction:: balderhub.data.lib.utils.functions.full_dictionary_is_not_definable
 
+
+Additional / Special Types
+==========================
+
+.. autoclass:: balderhub.data.lib.utils.UnorderedList
+
 Response Messages
 =================
 
