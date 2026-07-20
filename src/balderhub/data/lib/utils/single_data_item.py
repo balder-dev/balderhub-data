@@ -613,7 +613,12 @@ class SingleDataItem(pydantic.BaseModel, ABC, metaclass=SingleDataItemMetaclass)
 
                         # a sub SingleDataItem was expected and make sure that it is one
                         if issubclass(inner_type, SingleDataItem) and isinstance(cur_self_item, SingleDataItem):
-                            error_list.extend(cur_self_item.get_difference_error_messages(cur_other_item))
+                            error_list.extend(cur_self_item.get_difference_error_messages(
+                                cur_other_item,
+                                allow_non_definable=allow_non_definable,
+                                validate_unique_identification_separately=validate_unique_identification_separately
+                                # TODO also support excluded fields here
+                            ))
                             continue
                         # normal item -> compare values
                         if cur_self_item != cur_other_item:
